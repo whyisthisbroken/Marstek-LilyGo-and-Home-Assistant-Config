@@ -69,12 +69,14 @@ You'll find:
 ## 🔗 Credits & Resources
 
 Big thanks to everyone whose work helped this integration succeed:
-
-- 📘 **Modbus Register Documentation**  
-  [Duravolt Plug-in Battery Modbus.pdf](https://duravolt.nl/wp-content/uploads/Duravolt-Plug-in-Battery-Modbus.pdf)
-
 - 💡 **@Superduper1969** – MarstekVenus-LilygoRS485  
   [GitHub Repository](https://github.com/Superduper1969/MarstekVenus-LilygoRS485/tree/main)
+
+- 📘 **Modbus Register Documentation Marstek Venus C/E**  
+  [Duravolt Plug-in Battery Modbus.pdf](https://duravolt.nl/wp-content/uploads/Duravolt-Plug-in-Battery-Modbus.pdf)
+
+- 📘 **Documentation LilyGo T-CAN485**
+  [Xinyuan-LilyGO - T-CAN485](https://github.com/Xinyuan-LilyGO/T-CAN485)
 
 - 💬 **Tweakers Community Discussions**  
   - [Topic 1](https://gathering.tweakers.net/forum/list_messages/2282240)  
