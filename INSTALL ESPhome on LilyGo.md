@@ -121,9 +121,7 @@ Once the initial USB flash is successful:
 ## 📚 Useful Resources
 
 - 🔗 [ESPHome Documentation](https://esphome.io)
-- 🔗 [Mushroom UI Cards (Lovelace)](https://github.com/piitaya/lovelace-mushroom)
 - 🔗 [LilyGO T-CAN485 GitHub Repository](https://github.com/Xinyuan-LilyGO/T-Display-S3)
-- 🔗 [Marstek RS485 Battery Integration](https://github.com) *(insert your repo link here)*
 
 ---
 
