@@ -23,6 +23,27 @@ You'll find:
 - Optimized Modbus settings for Marstek batteries
 - Inspiration and references for deeper Modbus integration
 
+## 📊 Features
+
+- **Real-time AC/DC monitoring**  
+  Live display of power, voltage, and current for both AC and DC sides.
+
+- **Cell-level temperature and voltage display**  
+  Detailed insights into individual cell temps, voltages, and thermal warnings.
+
+- **State of Charge, Capacity, Errors & Warnings**  
+  SOC tracking, remaining capacity, BMS alerts and system diagnostics.
+
+- **Network diagnostics (WiFi, IP, Cloud, BT)**  
+  Monitor IP address, WiFi signal strength, cloud status and Bluetooth connection.
+
+- **Full control: charge/discharge limits, modes, cutoffs**  
+  Set SOC cutoffs, charge/discharge power limits, and switch user modes.
+
+- **Stylized Lovelace dashboard with dynamic color states**  
+  Fully themed interface using Mushroom UI Cards with templated badges and entity cards.
+
+
 ## 📦 Requirements
 
 - ✅ Home Assistant (2023.6+ recommended)
