@@ -1,0 +1,285 @@
+path: marstekbattery2
+icon: mdi:battery
+type: sections
+max_columns: 3
+dense_section_placement: true
+header:
+  card:
+    type: markdown
+    content: "# 🔋 Marstek Batterie Übersicht"
+  layout: center
+  badges_position: bottom
+  badges_wrap: wrap
+badges:
+  - type: custom:mushroom-template-badge
+    content: "Status: {{ states('sensor.marstekbattery_marstek_inverter_state') }}"
+    icon: mdi:battery-sync
+    color: >
+      {% if states('sensor.marstekbattery_marstek_inverter_state') in ['Online',
+      'Running'] %}
+        green
+      {% else %}
+        red
+      {% endif %}
+  - type: custom:mushroom-template-badge
+    content: >
+      WiFi Signal: {{ states('sensor.marstekbattery_wifi_signal_strength') }}
+      dBm
+    icon: mdi:wifi
+    color: >
+      {% set rssi = states('sensor.marstekbattery_wifi_signal_strength') | int
+      %} {% if rssi < -80 %} red {% elif rssi < -65 %} orange {% else %} green
+      {% endif %}
+  - type: custom:mushroom-template-badge
+    content: >
+      Temp intern: {{
+      states('sensor.marstekbattery_marstek_internal_temperature') | float |
+      round(1) }}°C
+    icon: mdi:thermometer
+    color: >
+      {% set t = states('sensor.marstekbattery_marstek_internal_temperature') |
+      float %} {% if t < 30 %} green {% elif t < 45 %} orange {% else %} red {%
+      endif %}
+    tap_action:
+      action: more-info
+    entity: sensor.marstekbattery_marstek_internal_temperature
+sections:
+  - type: grid
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: ⚡ AC & DC Werte
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_marstek_ac_power
+            name: AC Power
+            icon: mdi:flash
+            icon_color: yellow
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_marstek_ac_voltage
+            name: AC Volt
+            icon: mdi:power-plug
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_marstek_ac_current
+            name: AC Strom
+            icon: mdi:current-ac
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_marstek_battery_voltage_average
+            name: DC Volt
+            icon: mdi:power-socket
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_marstek_battery_current_average
+            name: DC Strom
+            icon: mdi:current-dc
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_marstek_battery_power
+            name: DC Power
+            icon: mdi:flash-outline
+  - type: grid
+    cards:
+      - type: custom:mushroom-title-card
+        title: 🧰 Temp & Zellinfos
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_marstek_battery_state_of_charge
+            name: Ladezustand
+            icon: mdi:battery-charging
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_marstek_battery_remaining_capacity
+            name: Restkapazität
+            icon: mdi:battery
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: sensor.marstekbattery_marstek_internal_mos1_temperature
+                name: MOS1 Temp.
+                icon: mdi:thermometer-lines
+              - type: custom:mushroom-entity-card
+                entity: sensor.marstekbattery_marstek_internal_mos2_temperature
+                name: MOS2 Temp.
+                icon: mdi:thermometer-lines
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: sensor.marstekbattery_marstek_max_cell_temperature
+                name: Zelltemp. Max
+                icon: mdi:thermometer-high
+              - type: custom:mushroom-entity-card
+                entity: sensor.marstekbattery_marstek_min_cell_temperature
+                name: Zelltemp. Min
+                icon: mdi:thermometer-low
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_marstek_internal_temperature
+            name: Interne Temp.
+            icon: mdi:thermometer
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_marstek_battery_voltage_average
+            name: Durchs. Batteriesp.
+            icon: mdi:car-battery
+          - type: custom:mushroom-template-badge
+            content: >
+              {% set val =
+              states('sensor.marstek_marstek_zellspannungsdifferenz') %} {% if
+              val not in ['unknown', 'unavailable', None] %}
+                Zellspannungsdiff.: {{ '{0:.0f}'.format(val | float * 1000) }} mV
+              {% else %} Zellspannungsdiff.: -- {% endif %}
+            icon: mdi:flash-alert
+            color: >
+              {% set v = states('sensor.marstek_marstek_zellspannungsdifferenz')
+              | float %} {% if v > 0.010 %} red {% elif v >= 0.008 %} orange {%
+              else %} green {% endif %}
+            tap_action:
+              action: more-info
+            entity: sensor.marstek_marstek_zellspannungsdifferenz
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: sensor.marstek_marstek_max_zellenspannung
+                name: Maximale Zellensp.
+                icon: mdi:flash-outline
+              - type: custom:mushroom-entity-card
+                entity: sensor.marstek_marstek_min_zellenspannung
+                name: Minimale Zellensp.
+                icon: mdi:flash-outline
+  - type: grid
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: 🌐 Netzwerk & Verbindung
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_esp_ip
+            name: IP-Adresse
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_esp_ssid
+            name: WLAN SSID
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_wifi_status
+            name: WLAN-Status
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_bt_status
+            name: Bluetooth-Status
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_cloud_status
+            name: Cloud-Anbindung
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.marstekbattery_marstek_network_abnormal
+            name: Netzwerk Problem
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.marstekbattery_marstek_wifi_abnormal
+            name: WLAN Problem
+  - type: grid
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: 📊 Energie-Ertrag
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_gesamte_tagesladung
+            name: Tagesladung
+            icon: mdi:calendar-today
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_gesamte_tagesentladung
+            name: Tagesentladung
+            icon: mdi:calendar-today-outline
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_gesamte_monatsladung
+            name: Monatsladung
+            icon: mdi:calendar-month
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstekbattery_gesamte_monatsentladung
+            name: Monatsentladung
+            icon: mdi:calendar-month-outline
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: 📦 Systeminformationen
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_gerate_name
+            name: Gerätename
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_software_version
+            name: Software-Version
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_firmware_version
+            name: Firmware-Version
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_bms_version
+            name: BMS-Version
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_esp_version
+            name: ESPHome-Version
+  - type: grid
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: ⚙️ Steuerung & Einstellungen
+          - type: custom:mushroom-entity-card
+            entity: number.marstekbattery_marstek_forcible_charge_power
+            name: Forcierte Ladung
+            icon: mdi:battery-plus
+          - type: custom:mushroom-entity-card
+            entity: number.marstekbattery_marstek_forcible_discharge_power
+            name: Forcierte Entladung
+            icon: mdi:battery-minus
+          - type: custom:mushroom-entity-card
+            entity: number.marstekbattery_marstek_max_charge_power
+            name: Max. Ladeleistung
+            icon: mdi:transmission-tower-export
+          - type: custom:mushroom-entity-card
+            entity: number.marstekbattery_marstek_max_discharge_power
+            name: Max. Entladeleistung
+            icon: mdi:transmission-tower-import
+          - type: custom:mushroom-entity-card
+            entity: number.marstekbattery_marstek_charge_to_soc
+            name: Ladeziel-SOC
+            icon: mdi:battery-charging-100
+          - type: custom:mushroom-entity-card
+            entity: number.marstekbattery_marstek_charging_cutoff_capacity
+            name: Ladeabschaltung bei
+            icon: mdi:battery-off
+          - type: custom:mushroom-entity-card
+            entity: number.marstekbattery_marstek_discharging_cutoff_capacity
+            name: Entladeabschaltung bei
+            icon: mdi:battery-arrow-down
+          - type: custom:mushroom-entity-card
+            entity: select.marstekbattery_marstek_user_work_mode
+            name: Work Mode
+            icon: mdi:cog-outline
+          - type: custom:mushroom-entity-card
+            entity: button.marstekbattery_stick_restart
+            name: Stick Neustarten
+            icon: mdi:restart
+  - type: grid
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
+            title: 🚨 Fehler & Warnungen
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.marstekbattery_marstek_fan_abnormal_warning
+            name: Lüfterfehler
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.marstekbattery_marstek_low_battery_soc_warning
+            name: SOC niedrig
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.marstekbattery_marstek_overtemperature_limit
+            name: Übertemperatur
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.marstekbattery_marstek_grid_overvoltage
+            name: Netzspannung zu hoch
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.marstekbattery_marstek_bat_communication_failure
+            name: Kommunikation Batterie
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.marstekbattery_marstek_bms_protect
+            name: BMS Schutz aktiv
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_power_restriction
+            name: Leistungsbeschränkung
+            icon: mdi:alert
+cards: []
