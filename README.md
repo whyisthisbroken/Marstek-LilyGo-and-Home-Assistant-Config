@@ -19,10 +19,18 @@ You'll find:
 ## 🔧 What’s Inside
 
 - ESPHome config for LilyGO T-Display RS485 (`t-can485`)
-- Dashboard YAML for Home Assistant (Lovelace)
+- Dashboard YAML for Home Assistant (Lovelace) with Mushroom and ESPHome Integration
 - Optimized Modbus settings for Marstek batteries
 - Inspiration and references for deeper Modbus integration
 
+## 📦 Requirements
+
+- ✅ Home Assistant (2023.6+ recommended)
+- ✅ [ESPHome](https://esphome.io) (configured via USB or OTA)
+- ✅ [HACS](https://hacs.xyz) – Home Assistant Community Store
+- ✅ [Mushroom UI Cards](https://github.com/piitaya/lovelace-mushroom)
+- ✅ LilyGO T-Display RS485 (`T-CAN485`)
+- ✅ Marstek Battery with RS485 Modbus support
 ---
 
 ## 📸 Screenshots
