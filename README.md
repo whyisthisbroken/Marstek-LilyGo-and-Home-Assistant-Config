@@ -59,7 +59,8 @@ You'll find:
 <img width="1625" height="744" alt="Screenshot 2025-08-05 193042" src="https://github.com/user-attachments/assets/cf8b575d-1923-488f-932c-92e6b2b52167" />
 
 ### LilyGO Web UI
-<img width="1510" height="4504" alt="192 168 178 160_" src="https://github.com/user-attachments/assets/52b085ab-14dc-4d53-a86e-b2c9cca3bac4" />
+<img width="1510" height="4354" alt="192 168 178 160_ (1)" src="https://github.com/user-attachments/assets/713584d4-2921-4161-93f0-f304bf724f2f" />
+
 
 
 ---
