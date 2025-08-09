@@ -115,10 +115,27 @@ sections:
             entity: sensor.marstekbattery_marstek_internal_temperature
             name: Interne Temp.
             icon: mdi:thermometer
-          - type: custom:mushroom-entity-card
+          - type: custom:mushroom-template-badge
             entity: sensor.marstekbattery_marstek_battery_voltage_average
-            name: Durchs. Batteriesp.
+            content: >
+              {% set val =
+              states('sensor.marstekbattery_marstek_battery_voltage_average') %}
+              {% if val not in ['unknown', 'unavailable', None, ''] %}
+                Durchs. Batteriesp.: {{ '{0:.1f}'.format(val | float) }} V
+              {% else %}
+                Durchs. Batteriesp.: --
+              {% endif %}
             icon: mdi:car-battery
+            color: >
+              {% set v =
+              states('sensor.marstekbattery_marstek_battery_voltage_average') |
+              float(0) %} {% if v < 50 %}
+                red
+              {% else %}
+                green
+              {% endif %}
+            tap_action:
+              action: more-info
           - type: custom:mushroom-template-badge
             content: >
               {% set val =
