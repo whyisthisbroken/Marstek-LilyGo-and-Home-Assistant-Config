@@ -215,9 +215,6 @@ sections:
           - type: custom:mushroom-title-card
             title: 📦 Systeminformationen
           - type: custom:mushroom-entity-card
-            entity: sensor.marstek_gerate_name
-            name: Gerätename
-          - type: custom:mushroom-entity-card
             entity: sensor.marstek_software_version
             name: Software-Version
           - type: custom:mushroom-entity-card
