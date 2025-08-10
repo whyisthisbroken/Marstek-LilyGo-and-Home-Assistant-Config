@@ -1,9 +1,7 @@
-substitutions:
-  devicename: marstek
-
 esphome:
-  name: $devicename
-    
+  name: marstek
+  friendly_name: Marstek Venus E
+  
 esp32:
   board: esp32dev
   framework:
@@ -18,7 +16,7 @@ logger:
   
 api:
   encryption:
-    key: "yourencryptionkey"
+    key: "your Home Assistant encryption key"
 
 ota:
   - platform: esphome
@@ -136,7 +134,7 @@ text_sensor:
       sorting_weight: 10
       
   - platform: template
-    name: "${devicename} Inverter State"
+    name: "Inverter State"
     lambda: |-
       switch (int(id(inverter_state).state)) {
         case 0: return std::string("Sleep");
@@ -155,13 +153,13 @@ text_sensor:
       
   - platform: wifi_info
     ip_address:
-      name: ESP IP
+      name: ESPHome IP
       icon: mdi:ip
       web_server:
         sorting_group_id: Diagnostic
         sorting_weight: 4
     ssid:
-      name: ESP SSID
+      name: ESPHome SSID
       icon: mdi:wifi
       web_server:
         sorting_group_id: Diagnostic
@@ -179,7 +177,7 @@ text_sensor:
 
   - platform: modbus_controller
     id: wifi_status
-    name: "Wifi status"
+    name: "Battery Wifi Status"
     modbus_controller_id: mt
     register_type: holding
     address: 30300
@@ -202,7 +200,7 @@ text_sensor:
       
   - platform: modbus_controller
     id: bt_status
-    name: "BT status"
+    name: "BT Status"
     modbus_controller_id: mt
     register_type: holding
     address: 30301
@@ -227,7 +225,7 @@ text_sensor:
      
   - platform: modbus_controller
     id: cloud_status
-    name: "Cloud status"
+    name: "Cloud Status"
     modbus_controller_id: mt
     register_type: holding
     address: 30302
@@ -274,13 +272,17 @@ text_sensor:
       
 button:
   - platform: restart
-    name: "Stick Restart"
+    name: "LilyGo Restart"
     
 # Binaire sensoren
 binary_sensor:
+  - platform: status
+    name: "ESP WiFi Status"
+    id: "esp_wifi_status"
+    
   - platform: modbus_controller
-    name: "Marstek PLL Abnormal Restart"
-    id: "marstek_pll_abnormal_restart"
+    name: "PLL Abnormal Restart"
+    id: "pll_abnormal_restart"
     icon: mdi:flash-triangle
     modbus_controller_id: mt
     register_type: holding
@@ -288,215 +290,211 @@ binary_sensor:
     bitmask: 0x01
 
   - platform: modbus_controller
-    name: "Marstek Overtemperature Limit"
+    name: "Overtemperature Limit"
     icon: mdi:thermometer-alert
-    id: "marstek_overtemperature_limit"
+    id: "overtemperature_limit"
     modbus_controller_id: mt
     register_type: holding
     address: 36000
     bitmask: 0x02
 
   - platform: modbus_controller
-    name: "Marstek Low Temperature Limit"
+    name: "Low Temperature Limit"
     icon: mdi:thermometer-alert
-    id: "marstek_low_temperature_limit"
+    id: "low_temperature_limit"
     modbus_controller_id: mt
     register_type: holding
     address: 36000
     bitmask: 0x04
 
   - platform: modbus_controller
-    name: "Marstek Fan Abnormal Warning"
+    name: "Fan Abnormal Warning"
     icon: mdi:fan-alert
-    id: "marstek_fan_abnormal_warning"
+    id: "fan_abnormal_warning"
     modbus_controller_id: mt
     register_type: holding
     address: 36000
     bitmask: 0x08
 
   - platform: modbus_controller
-    name: "Marstek Low Battery SOC Warning"
+    name: "Low Battery SOC Warning"
     icon: mdi:battery-off-outline
-    id: "marstek_low_battery_soc_warning"
+    id: "low_battery_soc_warning"
     modbus_controller_id: mt
     register_type: holding
     address: 36000
     bitmask: 0x16
 
   - platform: modbus_controller
-    name: "Marstek Output Overcurrent Warning"
+    name: "Output Overcurrent Warning"
     icon: mdi:flash-triangle
-    id: "marstek_output_overcurrent_warning"
+    id: "output_overcurrent_warning"
     modbus_controller_id: mt
     register_type: holding
     address: 36000
     bitmask: 0x32
 
   - platform: modbus_controller
-    name: "Marstek Abnormal Line Sequence Detection"
+    name: "Abnormal Line Sequence Detection"
     icon: mdi:flash-triangle
-    id: "marstek_abnormal_line_sequence_detection"
+    id: "abnormal_line_sequence_detection"
     modbus_controller_id: mt
     register_type: holding
     address: 36000
     bitmask: 0x64
 
   - platform: modbus_controller
-    name: "Marstek Wifi Abnormal"
+    name: "Wifi Abnormal"
     icon: mdi:wifi-alert
-    id: "marstek_wifi_abnormal"
+    id: "wifi_abnormal"
     modbus_controller_id: mt
     register_type: holding
     address: 36001
     bitmask: 0x01
 
   - platform: modbus_controller
-    name: "Marstek BLE abnormal"
+    name: "BLE abnormal"
     icon: mdi:bluetooth-off
-    id: "marstek_ble_abnormal"
+    id: "ble_abnormal"
     modbus_controller_id: mt
     register_type: holding
     address: 36001
     bitmask: 0x02
 
   - platform: modbus_controller
-    name: "Marstek Network abnormal"
+    name: "Network abnormal"
     icon: mdi:network-off
-    id: "marstek_network_abnormal"
+    id: "network_abnormal"
     modbus_controller_id: mt
     register_type: holding
     address: 36001
     bitmask: 0x04
 
   - platform: modbus_controller
-    name: "Marstek CT connection abnormal"
+    name: "CT connection abnormal"
     icon: mdi:robot-vacuum-alert
-    id: "marstek_ct_connection_abnormal"
+    id: "ct_connection_abnormal"
     modbus_controller_id: mt
     register_type: holding
     address: 36001
     bitmask: 0x08
 
   - platform: modbus_controller
-    name: "Marstek Grid overvoltage"
+    name: "Grid overvoltage"
     icon: mdi:flash-triangle
-    id: "marstek_grid_overvoltage"
+    id: "grid_overvoltage"
     modbus_controller_id: mt
     register_type: holding
     address: 36100
     bitmask: 0x01
 
   - platform: modbus_controller
-    name: "Marstek Grid undervoltage"
+    name: "Grid undervoltage"
     icon: mdi:flash-triangle-outline
-    id: "marstek_grid_undervoltage"
+    id: "grid_undervoltage"
     modbus_controller_id: mt
     register_type: holding
     address: 36100
     bitmask: 0x02
 
   - platform: modbus_controller
-    name: "Marstek Grid overfrequency"
+    name: "Grid overfrequency"
     icon: mdi:flash-triangle
-    id: "marstek_grid_overfrequency"
+    id: "grid_overfrequency"
     modbus_controller_id: mt
     register_type: holding
     address: 36100
     bitmask: 0x04
 
   - platform: modbus_controller
-    name: "Marstek Grid underfrequency"
+    name: "Grid underfrequency"
     icon: mdi:flash-triangle
-    id: "marstek_grid_underfrequency"
+    id: "grid_underfrequency"
     modbus_controller_id: mt
     register_type: holding
     address: 36100
     bitmask: 0x08
 
   - platform: modbus_controller
-    name: "Marstek Grid peak voltage abnormal"
+    name: "Grid peak voltage abnormal"
     icon: mdi:alert-plus
-    id: "marstek_grid_peak_voltage_abnormal"
+    id: "grid_peak_voltage_abnormal"
     modbus_controller_id: mt
     register_type: holding
     address: 36100
     bitmask: 0x10
 
   - platform: modbus_controller
-    name: "Marstek Current Dcover"
+    name: "Current Dcover"
     icon: mdi:flash-triangle
-    id: "marstek_current_dcover"
+    id: "current_dcover"
     modbus_controller_id: mt
     register_type: holding
     address: 36100
     bitmask: 0x20
 
   - platform: modbus_controller
-    name: "Marstek Voltage Dcover"
+    name: "Voltage Dcover"
     icon: mdi:flash-triangle
-    id: "marstek_voltage_dcover"
+    id: "voltage_dcover"
     modbus_controller_id: mt
     register_type: holding
     address: 36100
     bitmask: 0x40
 
   - platform: modbus_controller
-    name: "Marstek BAT overvoltage"
+    name: "BAT overvoltage"
     icon: mdi:flash-triangle
-    id: "marstek_bat_overvoltage"
+    id: "bat_overvoltage"
     modbus_controller_id: mt
     register_type: holding
     address: 36101
     bitmask: 0x01
 
   - platform: modbus_controller
-    name: "Marstek BAT undervoltage"
+    name: "BAT undervoltage"
     icon: mdi:flash-triangle-outline
-    id: "marstek_bat_undervoltage"
+    id: "bat_undervoltage"
     modbus_controller_id: mt
     register_type: holding
     address: 36101
     bitmask: 0x02
 
   - platform: modbus_controller
-    name: "Marstek BAT overcurrent"
+    name: "BAT overcurrent"
     icon: mdi:wave-undercurrent
-    id: "marstek_bat_overcurrent"
+    id: "bat_overcurrent"
     modbus_controller_id: mt
     register_type: holding
     address: 36101
     bitmask: 0x04
 
   - platform: modbus_controller
-    name: "Marstek BAT low SOC"
+    name: "BAT low SOC"
     icon: mdi:battery-off-outline
-    id: "marstek_bat_low_soc"
+    id: "bat_low_soc"
     modbus_controller_id: mt
     register_type: holding
     address: 36101
     bitmask: 0x08
 
   - platform: modbus_controller
-    name: "Marstek BAT communication failure"
+    name: "BAT communication failure"
     icon: mdi:flash-triangle
-    id: "marstek_bat_communication_failure"
+    id: "bat_communication_failure"
     modbus_controller_id: mt
     register_type: holding
     address: 36101
     bitmask: 0x10
 
   - platform: modbus_controller
-    name: "Marstek BMS protect"
+    name: "BMS protect"
     icon: mdi:flash-triangle
-    id: "marstek_bms_protect"
+    id: "bms_protect"
     modbus_controller_id: mt
     register_type: holding
     address: 36101
     bitmask: 0x20
-
-  - platform: status
-    name: "WiFi Status"
-    id: "lilygo_rs485_wifi_status"
     
 # Sensoren
 sensor:
@@ -511,6 +509,22 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 30
+      
+  - name: "Wifi Signal Strength"
+    id: "wifi_signal_strength"
+    icon: mdi:wifi
+    platform: modbus_controller
+    modbus_controller_id: mt
+    register_type: holding
+    address: 30303
+    value_type: U_WORD
+    unit_of_measurement: "dBm"
+    accuracy_decimals: 0
+    filters:
+      - multiply: -1    
+    web_server:
+      sorting_group_id: Diagnostic
+      sorting_weight: 7
       
   - platform: modbus_controller
     id: software_version
@@ -566,8 +580,8 @@ sensor:
             sprintf(buf, "V%d", version);
             id(bms_version_text).publish_state(buf);      
 
-  - name: "${devicename} Battery Voltage (Average)"
-    id: "marstek_battery_voltage_average"
+  - name: "Battery Voltage"
+    id: "battery_voltage"
     icon: mdi:sine-wave    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -584,8 +598,8 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 16
     
-  - name: "${devicename} Battery Current (Average)"
-    id: "marstek_battery_current_average"
+  - name: "Battery Current"
+    id: "battery_current"
     icon: mdi:current-dc    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -602,8 +616,8 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 15
 
-  - name: "${devicename} Battery Power"
-    id: "marstek_battery_power"
+  - name: "Battery Power"
+    id: "battery_power"
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -618,7 +632,7 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 14    
 
-  - name: "${devicename} Battery State Of Charge"
+  - name: "Battery State Of Charge"
     id: "battery_soc"
     platform: modbus_controller
     device_class: battery
@@ -635,8 +649,8 @@ sensor:
       sorting_weight: 5    
 
 # Slow Sensor
-  - name: "${devicename} Battery Total Energy"
-    id: "marstek_battery_total_energy"
+  - name: "Battery Total Energy"
+    id: "battery_total_energy"
     icon: mdi:battery-charging-100    
     platform: modbus_controller
     device_class: energy_storage
@@ -655,15 +669,15 @@ sensor:
       sorting_weight: 7
     
   - platform: template
-    name: "Marstek Battery Remaining Capacity"
-    id: "marstek_battery_remaining_capacity"
+    name: "Battery Remaining Capacity"
+    id: "battery_remaining_capacity"
     icon: mdi:battery-arrow-down-outline
     unit_of_measurement: "kWh"
     accuracy_decimals: 2
     update_interval: 120s
     lambda: |-
-      if (id(marstek_battery_total_energy).has_state() && id(battery_soc).has_state()) {
-        float total_energy = id(marstek_battery_total_energy).state;
+      if (id(battery_total_energy).has_state() && id(battery_soc).has_state()) {
+        float total_energy = id(battery_total_energy).state;
         float soc = id(battery_soc).state / 100.0;
         return roundf(total_energy * soc * 100) / 100; // Ensures two decimal places
       }
@@ -672,8 +686,8 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 6
 
-  - name: "${devicename} AC Voltage"
-    id: "marstek_ac_voltage"
+  - name: "AC Voltage"
+    id: "ac_voltage"
     icon: mdi:current-ac    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -690,8 +704,8 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 3
 
-  - name: "${devicename} AC Current"
-    id: "marstek_ac_current"
+  - name: "AC Current"
+    id: "ac_current"
     icon: mdi:current-ac    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -709,8 +723,8 @@ sensor:
       sorting_weight: 2
 
 # Slow Sensor
-  - name: "${devicename} AC Power"
-    id: "marstek_ac_power"
+  - name: "AC Power"
+    id: "ac_power"
     icon: mdi:flash    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -727,7 +741,7 @@ sensor:
       sorting_weight: 1    
 
   - name: "Gesamte Ladung"
-    id: "marstek_total_charging_energy"
+    id: "total_charging_energy"
     icon: mdi:chart-bar    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -747,7 +761,7 @@ sensor:
       sorting_weight: 12    
 
   - name: "Gesamte Entladung"
-    id: "marstek_total_discharging_energy"
+    id: "total_discharging_energy"
     icon: mdi:chart-bar    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -767,7 +781,7 @@ sensor:
       sorting_weight: 13    
 
   - name: "Gesamte Tagesladung"
-    id: "marstek_daily_charging_energy"
+    id: "daily_charging_energy"
     icon: mdi:chart-bar    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -787,7 +801,7 @@ sensor:
       sorting_weight: 8
       
   - name: "Gesamte Tagesentladung"
-    id: "marstek_daily_discharging_energy"
+    id: "daily_discharging_energy"
     icon: mdi:chart-bar    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -808,7 +822,7 @@ sensor:
       
 # Slow Sensor
   - name: "Gesamte Monatsladung"
-    id: "marstek_monthly_charging_energy"
+    id: "monthly_charging_energy"
     icon: mdi:chart-bar    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -829,7 +843,7 @@ sensor:
       
 # Slow Sensor
   - name: "Gesamte Monatsentladung"
-    id: "marstek_monthly_discharging_energy"
+    id: "monthly_discharging_energy"
     icon: mdi:chart-bar    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -848,8 +862,8 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 11    
 
-  - name: "${devicename} Internal Temperature"
-    id: "marstek_internal_temperature"
+  - name: "Internal Temperature"
+    id: "internal_temperature"
     icon: mdi:thermometer    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -867,8 +881,8 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 19
       
-  - name: "${devicename} Internal MOS1 Temperature"
-    id: "marstek_internal_mos1_temperature"
+  - name: "Internal MOS1 Temperature"
+    id: "internal_mos1_temperature"
     icon: mdi:thermometer    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -887,8 +901,8 @@ sensor:
       sorting_weight: 20    
 
 # Slow Sensor    
-  - name: "${devicename} Internal MOS2 Temperature"
-    id: "marstek_internal_mos2_temperature"
+  - name: "Internal MOS2 Temperature"
+    id: "internal_mos2_temperature"
     icon: mdi:thermometer    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -906,8 +920,8 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 21    
 
-  - name: "${devicename} Max. Cell Temperature"
-    id: "marstek_max_cell_temperature"
+  - name: "Max. Cell Temperature"
+    id: "max_cell_temperature"
     icon: mdi:thermometer    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -923,8 +937,8 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 22
     
-  - name: "${devicename} Min. Cell Temperature"
-    id: "marstek_min_cell_temperature"
+  - name: "Min. Cell Temperature"
+    id: "min_cell_temperature"
     icon: mdi:thermometer    
     platform: modbus_controller
     modbus_controller_id: mt
@@ -940,66 +954,66 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 23
     
-  - name: "${devicename} Battery Charge Voltage Limit"
-    id: "marstek_battery_charge_voltage_limit"
-    icon: mdi:sine-wave    
-    platform: modbus_controller
-    modbus_controller_id: mt
-    register_type: holding
-    address: 35110
-    value_type: U_WORD
-    unit_of_measurement: "V"
-    device_class: voltage
-    accuracy_decimals: 1
-    state_class: measurement
-    filters:
-      - multiply: 0.1
-    web_server:
-      sorting_group_id: Info
-      sorting_weight: 16
+  # - name: "Battery Charge Voltage Limit"
+    # id: "battery_charge_voltage_limit"
+    # icon: mdi:sine-wave    
+    # platform: modbus_controller
+    # modbus_controller_id: mt
+    # register_type: holding
+    # address: 35110
+    # value_type: U_WORD
+    # unit_of_measurement: "V"
+    # device_class: voltage
+    # accuracy_decimals: 1
+    # state_class: measurement
+    # filters:
+      # - multiply: 0.1
+    # web_server:
+      # sorting_group_id: Info
+      # sorting_weight: 16
 
-  - name: "${devicename} Battery Charge Current Limit"
-    id: "marstek_battery_charge_current_limit"
-    icon: mdi:current-dc    
-    platform: modbus_controller
-    modbus_controller_id: mt
-    register_type: holding
-    address: 35111
-    value_type: S_WORD
-    unit_of_measurement: "A"
-    device_class: current
-    accuracy_decimals: 1
-    state_class: measurement
-    filters:
-      - multiply: 0.01
-    skip_updates: 149   
-    web_server:
-      sorting_group_id: Info
-      sorting_weight: 17
+  # - name: "Battery Charge Current Limit"
+    # id: "battery_charge_current_limit"
+    # icon: mdi:current-dc    
+    # platform: modbus_controller
+    # modbus_controller_id: mt
+    # register_type: holding
+    # address: 35111
+    # value_type: S_WORD
+    # unit_of_measurement: "A"
+    # device_class: current
+    # accuracy_decimals: 1
+    # state_class: measurement
+    # filters:
+      # - multiply: 0.01
+    # skip_updates: 149   
+    # web_server:
+      # sorting_group_id: Info
+      # sorting_weight: 17
       
-  - name: "${devicename} Battery Discharge Current Limit"
-    id: "marstek_battery_discharge_current_limit"
-    icon: mdi:current-dc    
-    platform: modbus_controller
-    modbus_controller_id: mt
-    register_type: holding
-    address: 35112
-    value_type: S_WORD
-    unit_of_measurement: "A"
-    device_class: current
-    accuracy_decimals: 1
-    state_class: measurement
-    filters:
-      - multiply: 0.01
-    skip_updates: 149       
-    web_server:
-      sorting_group_id: Info
-      sorting_weight: 18
+  # - name: "Battery Discharge Current Limit"
+    # id: "battery_discharge_current_limit"
+    # icon: mdi:current-dc    
+    # platform: modbus_controller
+    # modbus_controller_id: mt
+    # register_type: holding
+    # address: 35112
+    # value_type: S_WORD
+    # unit_of_measurement: "A"
+    # device_class: current
+    # accuracy_decimals: 1
+    # state_class: measurement
+    # filters:
+      # - multiply: 0.01
+    # skip_updates: 149       
+    # web_server:
+      # sorting_group_id: Info
+      # sorting_weight: 18
 
     
-  - name: "${devicename} Max. Zellenspannung"
+  - name: "Max. Zellenspannung"
     icon: mdi:sine-wave  
-    id: marstek_max_cell_voltage
+    id: max_cell_voltage
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -1017,9 +1031,9 @@ sensor:
       sorting_weight: 24
     
 
-  - name: "${devicename} Min. Zellenspannung"
+  - name: "Min. Zellenspannung"
     icon: mdi:sine-wave  
-    id: marstek_min_cell_voltage  
+    id: min_cell_voltage  
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -1038,33 +1052,33 @@ sensor:
     
 
   - platform: template
-    name: "${devicename} Zellspannungsdifferenz"
+    name: "Zellspannungsdifferenz"
     icon: mdi:sine-wave    
     unit_of_measurement: "V"
     device_class: voltage
     accuracy_decimals: 3
     state_class: measurement
     lambda: |-
-      if (isnan(id(marstek_max_cell_voltage).state) || isnan(id(marstek_min_cell_voltage).state)) {
+      if (isnan(id(max_cell_voltage).state) || isnan(id(min_cell_voltage).state)) {
         return NAN;
       }
-      return id(marstek_max_cell_voltage).state - id(marstek_min_cell_voltage).state;
+      return id(max_cell_voltage).state - id(min_cell_voltage).state;
     web_server:
       sorting_group_id: Info
       sorting_weight: 26    
 
   - platform: wifi_signal
-    name: "WiFi Signal Strength"
+    name: "ESP WiFi Signal Strength"
     icon: mdi:wifi
-    id: "wifi_signal_strength"
+    id: "esp_wifi_signal_strength"
     update_interval: 30s
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 6    
 
 select:
-  - name: "${devicename} RS485 Control Mode"
-    id: "marstek_rs485_control_mode"
+  - name: "RS485 Control Mode"
+    id: "rs485_control_mode"
     icon: mdi:connection
     platform: modbus_controller
     modbus_controller_id: mt
@@ -1078,8 +1092,8 @@ select:
       sorting_group_id: Control
       sorting_weight: 1    
 
-  - name: "${devicename} Forcible Charge/Discharge" 
-    id: "marstek_forcible_chargedischarge"
+  - name: "Forcible Charge/Discharge" 
+    id: "forcible_chargedischarge"
     platform: modbus_controller
     modbus_controller_id: mt
     address: 42010
@@ -1094,8 +1108,8 @@ select:
       sorting_weight: 4
     
 
-  - name: "${devicename} Backup Function"
-    id: "marstek_backup_function"
+  - name: "Backup Function"
+    id: "backup_function"
     platform: modbus_controller
     modbus_controller_id: mt
     address: 41200
@@ -1108,8 +1122,8 @@ select:
       sorting_group_id: Control
       sorting_weight: 3     
 
-  - name: "${devicename} User Work Mode"
-    id: "marstek_user_work_mode"
+  - name: "User Work Mode"
+    id: "user_work_mode"
     icon: mdi:auto-mode
     platform: modbus_controller
     modbus_controller_id: mt
@@ -1125,8 +1139,8 @@ select:
       sorting_weight: 2
 
 number:
-  - name: "${devicename} Charge To SOC"
-    id: "marstek_charge_to_soc"
+  - name: "Charge To SOC"
+    id: "charge_to_soc"
     icon: mdi:battery-charging-medium 
     mode: box
     platform: modbus_controller
@@ -1143,8 +1157,8 @@ number:
       sorting_group_id: Control
       sorting_weight: 9
       
-  - name: "${devicename} Forcible Charge Power"
-    id: "marstek_forcible_charge_power"
+  - name: "Forcible Charge Power"
+    id: "forcible_charge_power"
     icon: mdi:tune-variant
     mode: box
     platform: modbus_controller
@@ -1161,8 +1175,8 @@ number:
       sorting_group_id: Control
       sorting_weight: 5    
     
-  - name: "${devicename} Forcible Discharge Power"
-    id: "marstek_forcible_discharge_power"
+  - name: "Forcible Discharge Power"
+    id: "forcible_discharge_power"
     icon: mdi:tune-variant
     mode: box
     platform: modbus_controller
@@ -1179,8 +1193,8 @@ number:
       sorting_group_id: Control
       sorting_weight: 6    
 
-  - name: "${devicename} Charging Cutoff Capacity"
-    id: "marstek_charging_cutoff_capacity"
+  - name: "Charging Cutoff Capacity"
+    id: "charging_cutoff_capacity"
     icon: mdi:battery-90
     platform: modbus_controller
     modbus_controller_id: mt
@@ -1192,8 +1206,8 @@ number:
     max_value: 100
     multiply: 10
 
-  - name: "${devicename} Discharging Cutoff Capacity"
-    id: "marstek_discharging_cutoff_capacity"
+  - name: "Discharging Cutoff Capacity"
+    id: "discharging_cutoff_capacity"
     icon: mdi:battery-10
     platform: modbus_controller
     modbus_controller_id: mt
@@ -1205,8 +1219,8 @@ number:
     max_value: 30
     multiply: 10
     
-  - name: "${devicename} Max. Charge Power"
-    id: "marstek_max_charge_power"
+  - name: "Max. Charge Power"
+    id: "max_charge_power"
     icon: mdi:tune-variant
     mode: box
     platform: modbus_controller
@@ -1221,8 +1235,8 @@ number:
     skip_updates: 4
 
 # Slow Sensor
-  - name: "${devicename} Max. Discharge Power"
-    id: "marstek_max_discharge_power"
+  - name: "Max. Discharge Power"
+    id: "max_discharge_power"
     icon: mdi:tune-variant
     mode: box
     platform: modbus_controller
@@ -1244,6 +1258,19 @@ light:
     pin: GPIO4
     num_leds: 1
     rgb_order: GRB
+    effects:
+      - pulse:
+          name: "Pulse slow"
+          transition_length: 3s
+          update_interval: 100ms
+      - pulse:
+          name: "Pulse medium"
+          transition_length: 1.5s
+          update_interval: 100ms
+      - pulse:
+          name: "Pulse fast"
+          transition_length: 0.7s
+          update_interval: 100ms
 
 interval:
   - interval: 5s
@@ -1258,9 +1285,10 @@ interval:
             - light.turn_on:
                 id: status_led
                 red: 0%
-                green: 100%  # 🟢 Green = Modbus OK & WiFi strong
+                green: 100%
                 blue: 0%
-                brightness: 0.3
+                brightness: 0.2
+                effect: "Pulse slow"
           else:
             - if:
                 condition:
@@ -1269,10 +1297,11 @@ interval:
                 then:
                   - light.turn_on:
                       id: status_led
-                      red: 100%  # 🟣 Purple = Both Modbus & WiFi failed
+                      red: 100%
                       green: 0%
                       blue: 100%
-                      brightness: 0.3
+                      brightness: 0.2
+                      effect: "Pulse fast"
                 else:
                   - if:
                       condition:
@@ -1283,12 +1312,14 @@ interval:
                             id: status_led
                             red: 0%
                             green: 0%
-                            blue: 100%  # 🔵 Blue = Weak WiFi signal (< -80 dBm)
+                            blue: 100%
                             brightness: 0.3
+                            effect: "Pulse medium"
                       else:
                         - light.turn_on:
                             id: status_led
-                            red: 100%  # 🔴 Red = Modbus error, WiFi OK
+                            red: 100%
                             green: 0%
                             blue: 0%
-                            brightness: 0.3
+                            brightness: 0.2
+                            effect: "Pulse slow"
