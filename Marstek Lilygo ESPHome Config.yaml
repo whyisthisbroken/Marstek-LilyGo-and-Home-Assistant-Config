@@ -1258,19 +1258,6 @@ light:
     pin: GPIO4
     num_leds: 1
     rgb_order: GRB
-    effects:
-      - pulse:
-          name: "Pulse slow"
-          transition_length: 3s
-          update_interval: 100ms
-      - pulse:
-          name: "Pulse medium"
-          transition_length: 1.5s
-          update_interval: 100ms
-      - pulse:
-          name: "Pulse fast"
-          transition_length: 0.7s
-          update_interval: 100ms
 
 interval:
   - interval: 5s
@@ -1285,10 +1272,9 @@ interval:
             - light.turn_on:
                 id: status_led
                 red: 0%
-                green: 100%
+                green: 100%  # 🟢 Green = Modbus OK & WiFi strong
                 blue: 0%
-                brightness: 0.2
-                effect: "Pulse slow"
+                brightness: 0.3
           else:
             - if:
                 condition:
@@ -1297,11 +1283,10 @@ interval:
                 then:
                   - light.turn_on:
                       id: status_led
-                      red: 100%
+                      red: 100%  # 🟣 Purple = Both Modbus & WiFi failed
                       green: 0%
                       blue: 100%
-                      brightness: 0.2
-                      effect: "Pulse fast"
+                      brightness: 0.3
                 else:
                   - if:
                       condition:
@@ -1312,14 +1297,12 @@ interval:
                             id: status_led
                             red: 0%
                             green: 0%
-                            blue: 100%
+                            blue: 100%  # 🔵 Blue = Weak WiFi signal (< -80 dBm)
                             brightness: 0.3
-                            effect: "Pulse medium"
                       else:
                         - light.turn_on:
                             id: status_led
-                            red: 100%
+                            red: 100%  # 🔴 Red = Modbus error, WiFi OK
                             green: 0%
                             blue: 0%
-                            brightness: 0.2
-                            effect: "Pulse slow"
+                            brightness: 0.3
