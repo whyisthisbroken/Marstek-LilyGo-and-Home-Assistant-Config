@@ -55,12 +55,13 @@ You'll find:
 ## 📸 Screenshots
 
 ### Home Assistant Dashboard
-<img width="1596" height="681" alt="Screenshot 2025-08-09 093636" src="https://github.com/user-attachments/assets/f128c6a2-09d2-482a-aed4-fd886d76fe05" />
 
-<img width="1588" height="663" alt="Screenshot 2025-08-09 093713" src="https://github.com/user-attachments/assets/8d5e016a-c830-4f6d-94bd-e5b2ea3f12a3" />
+<img width="1601" height="711" alt="Screenshot 2025-08-10 095444" src="https://github.com/user-attachments/assets/17eed654-cdd2-47c7-88e8-b7b45e3f7f36" />
+<img width="1590" height="587" alt="Screenshot 2025-08-10 095454" src="https://github.com/user-attachments/assets/9e8aa950-948e-4295-9667-62e8a784b225" />
 
 ### LilyGO Web UI
-<img width="1510" height="4354" alt="192 168 178 160_ (1)" src="https://github.com/user-attachments/assets/713584d4-2921-4161-93f0-f304bf724f2f" />
+
+<img width="1510" height="4281" alt="192 168 178 160_" src="https://github.com/user-attachments/assets/45b2d848-1b31-4d20-a1dd-e60c2ca8216c" />
 
 
 
