@@ -639,7 +639,7 @@ sensor:
     id: "marstek_battery_total_energy"
     icon: mdi:battery-charging-100    
     platform: modbus_controller
-    device_class: energy
+    device_class: energy_storage
     state_class: measurement
     modbus_controller_id: mt
     register_type: holding
