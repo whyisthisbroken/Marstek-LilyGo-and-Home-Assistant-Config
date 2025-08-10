@@ -1,0 +1,81 @@
+You need this Tempaltes for the Marstek Dashboard:
+  - name: "Tages-Effizienz"
+    unique_id: tages_effizienz
+    unit_of_measurement: "%"
+    icon: mdi:battery
+    state: >
+      {% set charging = states('sensor.marstekbattery_gesamte_tagesladung') | float(0) %}
+      {% set discharging = states('sensor.marstekbattery_gesamte_tagesentladung') | float(0) %}
+      {% if charging > 0 %}
+        {{ ((discharging / charging) * 100) | round(1) }}
+      {% else %}
+        0
+      {% endif %}
+
+  - name: "Tages-Effizienz-Text"
+    unique_id: tages_effizienz_text
+    icon: mdi:battery
+    state: >
+      {% set charging = states('sensor.marstekbattery_gesamte_tagesladung') | float(0) %}
+      {% set discharging = states('sensor.marstekbattery_gesamte_tagesentladung') | float(0) %}
+      {% if charging == 0 and discharging > 0 %}
+        Nur Entladung, kein Laden bisher
+      {% elif charging < discharging %}
+        Ladung geringer als Entladung – Effizienz nicht definiert
+      {% else %}
+        {{ ((discharging / charging) * 100) | round(1) }} %
+      {% endif %}
+
+  - name: "Monats-Effizienz"
+    unique_id: monats_effizienz
+    unit_of_measurement: "%"
+    icon: mdi:calendar-month
+    state: >
+      {% set charging = states('sensor.marstekbattery_gesamte_monatsladung') | float(0) %}
+      {% set discharging = states('sensor.marstekbattery_gesamte_monatsentladung') | float(0) %}
+      {% if charging > 0 %}
+        {{ ((discharging / charging) * 100) | round(1) }}
+      {% else %}
+        0
+      {% endif %}
+
+  - name: "Totale-Effizienz"
+    unique_id: totale_effizienz
+    unit_of_measurement: "%"
+    icon: mdi:battery-high
+    state: >
+      {% set charging = states('sensor.batterie_ladung') | float(0) %}
+      {% set discharging = states('sensor.batterie_entladung') | float(0) %}
+      {% if charging > 0 %}
+        {{ ((discharging / charging) * 100) | round(1) }}
+      {% else %}
+        0
+      {% endif %}
+
+
+
+Add this to calculate the estimated time (full/empty). Here, the DC power is used to get a realistic value.
+
+  - name: "Batterie Restlaufzeit"
+    unique_id: runtime_estimate
+    state: >
+        {% set soc = states('sensor.marstek_battery_state_of_charge') | float(0) %}
+        {% set power = states('sensor.marstek_battery_power') | float(0) %}
+        {% set cap_total = 5120 %}
+        {% set cap_min = 560 %}
+        {% set cap_now = (soc / 100.0) * cap_total %}
+        {% set ladeleistung = power > 10 %}
+        {% set entladeleistung = power < -10 %}
+        {% if soc <= 11 and not ladeleistung %}
+          Leer
+        {% elif ladeleistung %}
+          {% set wh_needed = cap_total - cap_now %}
+          {% set hours = wh_needed / power %}
+          Voll in: {{ (hours // 1) | int }}h {{ ((hours % 1) * 60) | int }}min
+        {% elif entladeleistung %}
+          {% set wh_available = cap_now - cap_min %}
+          {% set hours = wh_available / (-1 * power) %}
+          Leer in: {{ (hours // 1) | int }}h {{ ((hours % 1) * 60) | int }}min
+        {% else %}
+          Standby
+        {% endif %}
