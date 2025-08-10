@@ -1258,6 +1258,25 @@ light:
     pin: GPIO4
     num_leds: 1
     rgb_order: GRB
+    effects:
+      - pulse:
+          name: "Fast Blink Red"
+          transition_length: 0.3s
+          update_interval: 0.6s
+          min_brightness: 20%
+          max_brightness: 100%
+      - pulse:
+          name: "Fast Blink Purple"
+          transition_length: 0.3s
+          update_interval: 0.6s
+          min_brightness: 20%
+          max_brightness: 100%
+      - pulse:
+          name: "Fast Blink Blue"
+          transition_length: 0.3s
+          update_interval: 0.6s
+          min_brightness: 20%
+          max_brightness: 100%
 
 interval:
   - interval: 5s
@@ -1269,10 +1288,13 @@ interval:
             lambda: |-
               return !isnan(id(battery_soc).state) && id(wifi_signal_strength).state > -80;
           then:
+            - light.turn_off:
+                id: status_led
+            - delay: 100ms
             - light.turn_on:
                 id: status_led
                 red: 0%
-                green: 100%  # 🟢 Green = Modbus OK & WiFi strong
+                green: 100%
                 blue: 0%
                 brightness: 0.3
           else:
@@ -1283,10 +1305,10 @@ interval:
                 then:
                   - light.turn_on:
                       id: status_led
-                      red: 100%  # 🟣 Purple = Both Modbus & WiFi failed
+                      red: 100%
                       green: 0%
-                      blue: 100%
-                      brightness: 0.3
+                      blue: 0%
+                      effect: "Fast Blink Red" 
                 else:
                   - if:
                       condition:
@@ -1297,12 +1319,12 @@ interval:
                             id: status_led
                             red: 0%
                             green: 0%
-                            blue: 100%  # 🔵 Blue = Weak WiFi signal (< -80 dBm)
-                            brightness: 0.3
+                            blue: 100%
+                            effect: "Fast Blink Blue"
                       else:
                         - light.turn_on:
                             id: status_led
-                            red: 100%  # 🔴 Red = Modbus error, WiFi OK
+                            red: 100%
                             green: 0%
-                            blue: 0%
-                            brightness: 0.3
+                            blue: 100%
+                            effect: "Fast Blink Purple" 
