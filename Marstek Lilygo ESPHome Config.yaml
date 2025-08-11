@@ -61,6 +61,11 @@ web_server:
 #   servers:
 #     - 192.168.178.250 ##TimeServer IP
 
+##You can use Home Assistant for Time sync, just umcomment this section##
+#time:
+#  - platform: homeassistant
+#    id: homeassistant_time
+
 # Set pins required for LilyGo T-CAN485 board
 output:
   - platform: gpio
