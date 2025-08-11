@@ -1,31 +1,4 @@
 You need this Tempaltes for the Marstek Dashboard:
-  - name: "Tages-Effizienz"
-    unique_id: tages_effizienz
-    unit_of_measurement: "%"
-    icon: mdi:battery
-    state: >
-      {% set charging = states('sensor.marstekbattery_gesamte_tagesladung') | float(0) %}
-      {% set discharging = states('sensor.marstekbattery_gesamte_tagesentladung') | float(0) %}
-      {% if charging > 0 %}
-        {{ ((discharging / charging) * 100) | round(1) }}
-      {% else %}
-        0
-      {% endif %}
-
-  - name: "Tages-Effizienz-Text"
-    unique_id: tages_effizienz_text
-    icon: mdi:battery
-    state: >
-      {% set charging = states('sensor.marstekbattery_gesamte_tagesladung') | float(0) %}
-      {% set discharging = states('sensor.marstekbattery_gesamte_tagesentladung') | float(0) %}
-      {% if charging == 0 and discharging > 0 %}
-        Nur Entladung, kein Laden bisher
-      {% elif charging < discharging %}
-        Ladung geringer als Entladung – Effizienz nicht definiert
-      {% else %}
-        {{ ((discharging / charging) * 100) | round(1) }} %
-      {% endif %}
-
   - name: "Monats-Effizienz"
     unique_id: monats_effizienz
     unit_of_measurement: "%"
