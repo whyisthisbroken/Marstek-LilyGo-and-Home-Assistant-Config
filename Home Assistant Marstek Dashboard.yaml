@@ -183,18 +183,6 @@ sections:
         title: 📊 Energie-Ertrag
       - type: vertical-stack
         cards:
-          - type: custom:mushroom-template-card
-            primary: Tages-Effizienz
-            secondary: >
-              {% set text = states('sensor.tages_effizienz_text') %} {% if text
-              != "" and text != "0" and
-                    (text != (states('sensor.tages_effizienz') + ' %')) %}
-                {{ text }}
-              {% else %}
-                {{ states('sensor.tages_effizienz') }} %
-              {% endif %}
-            icon: mdi:battery
-            icon_color: green
           - type: custom:mushroom-entity-card
             entity: sensor.monats_effizienz
             name: Monats-Effizienz
