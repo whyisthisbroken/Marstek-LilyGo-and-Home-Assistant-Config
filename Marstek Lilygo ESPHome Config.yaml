@@ -2,13 +2,16 @@ esphome:
   name: marstek
   friendly_name: Marstek Venus E
   
+##THIS CONFIG IS ONLY FOR THE LILYGO T-CAN485, ITS NOT TESTET ON ANY OTHER DEVICE##
 esp32:
   board: esp32dev
   framework:
     type: esp-idf
     sdkconfig_options:
-      CONFIG_COMPILER_OPTIMIZATION_PERF: y
-      CONFIG_BT_ENABLED: n
+      CONFIG_COMPILER_OPTIMIZATION_PERF: "y"
+      CONFIG_ESPTOOLPY_FLASHSIZE_4MB: "y" 
+      CONFIG_SPIRAM_SUPPORT: "n"
+      CONFIG_BT_ENABLED: "n"
     
 logger:
   baud_rate: 0
@@ -16,19 +19,18 @@ logger:
   
 api:
   encryption:
-    key: "your Home Assistant encryption key"
+    key: !secret api_encryption_key
 
 ota:
   - platform: esphome
-    password: ""
+    password: !secret ota_password
 
-##Setup your Network Settings here...
 wifi:
-  ssid: "YourSSID"
-  password: "WiFiPassword"
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
   fast_connect: true
   manual_ip:
-    static_ip: 192.168.178.160 ##Setup your Network Settings here...
+    static_ip: 192.168.178.160
     gateway: 192.168.178.1
     subnet: 255.255.255.0
     dns1: 192.168.178.220
@@ -37,8 +39,8 @@ wifi:
 web_server:
   port: 80
   version: 3
-  include_internal: False
-  local: True
+  include_internal: false
+  local: true
   sorting_groups:
     - id: Info
       name: "Info"
