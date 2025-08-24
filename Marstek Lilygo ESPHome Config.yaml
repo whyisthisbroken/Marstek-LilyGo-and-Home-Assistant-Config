@@ -29,6 +29,8 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
   fast_connect: true
+  enable_btm: true
+  reboot_timeout: 5min
   manual_ip:
     static_ip: 192.168.178.160
     gateway: 192.168.178.1
@@ -108,7 +110,7 @@ modbus_controller:
     modbus_id: modbus1
     command_throttle: 30ms
     update_interval: 2s
-    offline_skip_updates: 5
+    #offline_skip_updates: 5
 
 text_sensor:
   - platform: template
