@@ -1288,53 +1288,77 @@ light:
           min_brightness: 20%
           max_brightness: 100%
 
+globals:
+  - id: last_led_status
+    type: int
+    restore_value: no
+    initial_value: '0'
+
 interval:
   - interval: 5s
     then:
       - lambda: |-
-          ESP_LOGD("status", "Modbus: %.0f, WiFi: %.0f", id(battery_soc).state, id(wifi_signal_strength).state);
+          int new_status = 0;
+
+          if (!isnan(id(battery_soc).state) && id(wifi_signal_strength).state > -80) {
+            new_status = 1;  // grün
+          } else if (isnan(id(battery_soc).state) && id(wifi_signal_strength).state < -80) {
+            new_status = 2;  // rot blinkend
+          } else if (id(wifi_signal_strength).state < -80) {
+            new_status = 3;  // blau blinkend
+          } else {
+            new_status = 4;  // lila blinkend
+          }
+
+          if (new_status != id(last_led_status)) {
+            id(last_led_status) = new_status;
+          }
+
+      # Status 1: grün
       - if:
           condition:
-            lambda: |-
-              return !isnan(id(battery_soc).state) && id(wifi_signal_strength).state > -80;
+            lambda: 'return id(last_led_status) == 1;'
           then:
-            - light.turn_off:
-                id: status_led
-            - delay: 100ms
             - light.turn_on:
                 id: status_led
                 red: 0%
                 green: 100%
+                brightness: 30%
                 blue: 0%
-                brightness: 0.3
-          else:
-            - if:
-                condition:
-                  lambda: |-
-                    return isnan(id(battery_soc).state) && id(wifi_signal_strength).state < -80;
-                then:
-                  - light.turn_on:
-                      id: status_led
-                      red: 100%
-                      green: 0%
-                      blue: 0%
-                      effect: "Fast Blink Red" 
-                else:
-                  - if:
-                      condition:
-                        lambda: |-
-                          return id(wifi_signal_strength).state < -80;
-                      then:
-                        - light.turn_on:
-                            id: status_led
-                            red: 0%
-                            green: 0%
-                            blue: 100%
-                            effect: "Fast Blink Blue"
-                      else:
-                        - light.turn_on:
-                            id: status_led
-                            red: 100%
-                            green: 0%
-                            blue: 100%
-                            effect: "Fast Blink Purple" 
+                effect: none
+
+      # Status 2: rot blinkend
+      - if:
+          condition:
+            lambda: 'return id(last_led_status) == 2;'
+          then:
+            - light.turn_on:
+                id: status_led
+                red: 100%
+                green: 0%
+                blue: 0%
+                effect: "Fast Blink Red"
+
+      # Status 3: blau blinkend
+      - if:
+          condition:
+            lambda: 'return id(last_led_status) == 3;'
+          then:
+            - light.turn_on:
+                id: status_led
+                red: 0%
+                green: 0%
+                blue: 100%
+                effect: "Fast Blink Blue"
+
+      # Status 4: lila blinkend
+      - if:
+          condition:
+            lambda: 'return id(last_led_status) == 4;'
+          then:
+            - light.turn_on:
+                id: status_led
+                red: 100%
+                green: 0%
+                blue: 100%
+                effect: "Fast Blink Purple"
