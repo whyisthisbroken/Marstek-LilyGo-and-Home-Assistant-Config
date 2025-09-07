@@ -58,6 +58,7 @@ web_server:
       name: "Diagnostic"
       sorting_weight: -10
 
+##Time Server Optional, comment if you dont have a Timeserver like Chrony,setup your TimeServer IP!!!##
 time:
   - platform: sntp
     id: local_time
@@ -65,6 +66,12 @@ time:
     servers:
       - 192.168.178.250
 
+##You can use Home Assistant for Time sync, just umcomment this section##
+#time:
+#  - platform: homeassistant
+#    id: homeassistant_time
+
+##Pins required for LilyGo T-CAN485 board
 output:
   - platform: gpio
     id: ENABLE_PIN # Enable the chip
