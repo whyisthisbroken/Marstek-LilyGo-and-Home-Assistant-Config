@@ -1,22 +1,23 @@
 esphome:
   name: marstek
   friendly_name: Marstek Venus E
-  
+
 ##THIS CONFIG IS ONLY FOR THE LILYGO T-CAN485, ITS NOT TESTET ON ANY OTHER DEVICE##
+
 esp32:
   board: esp32dev
   framework:
     type: esp-idf
     sdkconfig_options:
       CONFIG_COMPILER_OPTIMIZATION_PERF: "y"
-      CONFIG_ESPTOOLPY_FLASHSIZE_4MB: "y" 
+      CONFIG_ESPTOOLPY_FLASHSIZE_4MB: "y"
       CONFIG_SPIRAM_SUPPORT: "n"
       CONFIG_BT_ENABLED: "n"
-    
+
 logger:
   baud_rate: 0
   level: WARN
-  
+
 api:
   encryption:
     key: !secret api_encryption_key
@@ -50,40 +51,31 @@ web_server:
     - id: Control
       name: "Control"
       sorting_weight: -30
-    - id: Status
-      name: "Status"
+    - id: Warnings
+      name: "Warnungen"
       sorting_weight: -20
     - id: Diagnostic
       name: "Diagnostic"
       sorting_weight: -10
 
-##Time Server Optional, uncomment if you have a Timeserver like Chrony##
-#time:
-# - platform: sntp
-#   id: local_time
-#   timezone: "Europe/Berlin"
-#   servers:
-#     - 192.168.178.250 ##TimeServer IP
+time:
+  - platform: sntp
+    id: local_time
+    timezone: "Europe/Berlin"
+    servers:
+      - 192.168.178.250
 
-##You can use Home Assistant for Time sync, just umcomment this section##
-#time:
-#  - platform: homeassistant
-#    id: homeassistant_time
-
-# Set pins required for LilyGo T-CAN485 board
 output:
   - platform: gpio
     id: ENABLE_PIN # Enable the chip
     pin:
       number: GPIO19
       inverted: true
-
   - platform: gpio
     id: SE_PIN # Enable autodirection
     pin:
       number: GPIO17
       inverted: true
-
   - platform: gpio
     id: ENABLE_5V_PIN # Enable 5V pin for RS485 chip
     pin:
@@ -117,12 +109,12 @@ text_sensor:
     name: "Software Version"
     id: software_version_text
     icon: mdi:factory
-    update_interval: never 
+    update_interval: never
     entity_category: diagnostic
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 8
-      
+
   - platform: template
     name: "Firmware Version"
     id: firmware_version_text
@@ -142,7 +134,7 @@ text_sensor:
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 10
-      
+
   - platform: template
     name: "Inverter State"
     lambda: |-
@@ -160,7 +152,7 @@ text_sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 4
-      
+
   - platform: wifi_info
     ip_address:
       name: ESPHome IP
@@ -174,7 +166,7 @@ text_sensor:
       web_server:
         sorting_group_id: Diagnostic
         sorting_weight: 3
-      
+
   - platform: version
     name: ESP Version
     hide_timestamp: true
@@ -183,7 +175,7 @@ text_sensor:
     entity_category: diagnostic
     web_server:
       sorting_group_id: Diagnostic
-      sorting_weight: 2   
+      sorting_weight: 2
 
   - platform: modbus_controller
     id: wifi_status
@@ -200,14 +192,14 @@ text_sensor:
       ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
       std::string mode_str;
       switch (int_mode) {
-        case 0:  mode_str = "Disconnected"; break;
-        case 1:  mode_str = "Connected"; break;                                                              
+        case 0: mode_str = "Disconnected"; break;
+        case 1: mode_str = "Connected"; break;
       }
       return mode_str;
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 20
-      
+
   - platform: modbus_controller
     id: bt_status
     name: "BT Status"
@@ -223,16 +215,16 @@ text_sensor:
       ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
       std::string mode_str;
       switch (int_mode) {
-        case 0:  mode_str = "Off"; break;
-        case 1:  mode_str = "Active after boot"; break;    
-        case 2:  mode_str = "Connected"; break; 
-        case 3:  mode_str = "Active"; break;                                                           
+        case 0: mode_str = "Off"; break;
+        case 1: mode_str = "Active after boot"; break;
+        case 2: mode_str = "Connected"; break;
+        case 3: mode_str = "Active"; break;
       }
       return mode_str;
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 21
-     
+
   - platform: modbus_controller
     id: cloud_status
     name: "Cloud Status"
@@ -248,14 +240,14 @@ text_sensor:
       ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
       std::string mode_str;
       switch (int_mode) {
-        case 0:  mode_str = "Disconnected"; break;
-        case 1:  mode_str = "Connected"; break;                                                              
+        case 0: mode_str = "Disconnected"; break;
+        case 1: mode_str = "Connected"; break;
       }
       return mode_str;
     web_server:
       sorting_group_id: Diagnostic
-      sorting_weight: 22      
-      
+      sorting_weight: 22
+
   - platform: modbus_controller
     id: power_restriction_discharge
     name: "Power restriction"
@@ -271,25 +263,29 @@ text_sensor:
       ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
       std::string mode_str;
       switch (int_mode) {
-        case 0:  mode_str = "Off"; break;
-        case 1:  mode_str = "800W limited"; break;                                                              
+        case 0: mode_str = "Off"; break;
+        case 1: mode_str = "800W limited"; break;
       }
       return mode_str;
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 23
-      
-      
+
 button:
   - platform: restart
     name: "LilyGo Restart"
-    
-# Binaire sensoren
+    web_server:
+      sorting_group_id: Diagnostic
+      sorting_weight: 1
+
 binary_sensor:
   - platform: status
     name: "ESP WiFi Status"
     id: "esp_wifi_status"
-    
+    web_server:
+      sorting_group_id: Diagnostic
+      sorting_weight: 5
+
   - platform: modbus_controller
     name: "PLL Abnormal Restart"
     id: "pll_abnormal_restart"
@@ -298,6 +294,9 @@ binary_sensor:
     register_type: holding
     address: 36000
     bitmask: 0x01
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 1
 
   - platform: modbus_controller
     name: "Overtemperature Limit"
@@ -307,6 +306,9 @@ binary_sensor:
     register_type: holding
     address: 36000
     bitmask: 0x02
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 2
 
   - platform: modbus_controller
     name: "Low Temperature Limit"
@@ -316,6 +318,9 @@ binary_sensor:
     register_type: holding
     address: 36000
     bitmask: 0x04
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 3
 
   - platform: modbus_controller
     name: "Fan Abnormal Warning"
@@ -325,6 +330,9 @@ binary_sensor:
     register_type: holding
     address: 36000
     bitmask: 0x08
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 4
 
   - platform: modbus_controller
     name: "Low Battery SOC Warning"
@@ -334,6 +342,9 @@ binary_sensor:
     register_type: holding
     address: 36000
     bitmask: 0x16
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 5
 
   - platform: modbus_controller
     name: "Output Overcurrent Warning"
@@ -343,6 +354,9 @@ binary_sensor:
     register_type: holding
     address: 36000
     bitmask: 0x32
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 6
 
   - platform: modbus_controller
     name: "Abnormal Line Sequence Detection"
@@ -352,6 +366,9 @@ binary_sensor:
     register_type: holding
     address: 36000
     bitmask: 0x64
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 7
 
   - platform: modbus_controller
     name: "Wifi Abnormal"
@@ -361,6 +378,9 @@ binary_sensor:
     register_type: holding
     address: 36001
     bitmask: 0x01
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 8
 
   - platform: modbus_controller
     name: "BLE abnormal"
@@ -370,6 +390,9 @@ binary_sensor:
     register_type: holding
     address: 36001
     bitmask: 0x02
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 9
 
   - platform: modbus_controller
     name: "Network abnormal"
@@ -379,6 +402,9 @@ binary_sensor:
     register_type: holding
     address: 36001
     bitmask: 0x04
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 10
 
   - platform: modbus_controller
     name: "CT connection abnormal"
@@ -388,6 +414,9 @@ binary_sensor:
     register_type: holding
     address: 36001
     bitmask: 0x08
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 11
 
   - platform: modbus_controller
     name: "Grid overvoltage"
@@ -397,6 +426,9 @@ binary_sensor:
     register_type: holding
     address: 36100
     bitmask: 0x01
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 12
 
   - platform: modbus_controller
     name: "Grid undervoltage"
@@ -406,6 +438,9 @@ binary_sensor:
     register_type: holding
     address: 36100
     bitmask: 0x02
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 13
 
   - platform: modbus_controller
     name: "Grid overfrequency"
@@ -415,6 +450,9 @@ binary_sensor:
     register_type: holding
     address: 36100
     bitmask: 0x04
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 14
 
   - platform: modbus_controller
     name: "Grid underfrequency"
@@ -424,6 +462,9 @@ binary_sensor:
     register_type: holding
     address: 36100
     bitmask: 0x08
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 15
 
   - platform: modbus_controller
     name: "Grid peak voltage abnormal"
@@ -433,6 +474,9 @@ binary_sensor:
     register_type: holding
     address: 36100
     bitmask: 0x10
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 16
 
   - platform: modbus_controller
     name: "Current Dcover"
@@ -442,6 +486,9 @@ binary_sensor:
     register_type: holding
     address: 36100
     bitmask: 0x20
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 17
 
   - platform: modbus_controller
     name: "Voltage Dcover"
@@ -451,6 +498,9 @@ binary_sensor:
     register_type: holding
     address: 36100
     bitmask: 0x40
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 18
 
   - platform: modbus_controller
     name: "BAT overvoltage"
@@ -460,6 +510,9 @@ binary_sensor:
     register_type: holding
     address: 36101
     bitmask: 0x01
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 19
 
   - platform: modbus_controller
     name: "BAT undervoltage"
@@ -469,6 +522,9 @@ binary_sensor:
     register_type: holding
     address: 36101
     bitmask: 0x02
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 20
 
   - platform: modbus_controller
     name: "BAT overcurrent"
@@ -478,6 +534,9 @@ binary_sensor:
     register_type: holding
     address: 36101
     bitmask: 0x04
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 21
 
   - platform: modbus_controller
     name: "BAT low SOC"
@@ -487,6 +546,9 @@ binary_sensor:
     register_type: holding
     address: 36101
     bitmask: 0x08
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 22
 
   - platform: modbus_controller
     name: "BAT communication failure"
@@ -496,6 +558,9 @@ binary_sensor:
     register_type: holding
     address: 36101
     bitmask: 0x10
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 23
 
   - platform: modbus_controller
     name: "BMS protect"
@@ -505,8 +570,10 @@ binary_sensor:
     register_type: holding
     address: 36101
     bitmask: 0x20
-    
-# Sensoren
+    web_server:
+      sorting_group_id: Warnings
+      sorting_weight: 24
+
 sensor:
   - platform: modbus_controller
     id: inverter_state
@@ -519,7 +586,7 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 30
-      
+
   - name: "Wifi Signal Strength"
     id: "wifi_signal_strength"
     icon: mdi:wifi
@@ -531,11 +598,11 @@ sensor:
     unit_of_measurement: "dBm"
     accuracy_decimals: 0
     filters:
-      - multiply: -1    
+      - multiply: -1
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 7
-      
+
   - platform: modbus_controller
     id: software_version
     icon: mdi:factory
@@ -562,7 +629,7 @@ sensor:
     address: 31101
     value_type: U_WORD
     accuracy_decimals: 0
-    skip_updates: 149 
+    skip_updates: 149
     internal: true
     on_value:
       then:
@@ -588,11 +655,11 @@ sensor:
             int version = (int)x;
             char buf[5];
             sprintf(buf, "V%d", version);
-            id(bms_version_text).publish_state(buf);      
+            id(bms_version_text).publish_state(buf);
 
   - name: "Battery Voltage"
     id: "battery_voltage"
-    icon: mdi:sine-wave    
+    icon: mdi:sine-wave
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -607,10 +674,10 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 16
-    
+
   - name: "Battery Current"
     id: "battery_current"
-    icon: mdi:current-dc    
+    icon: mdi:current-dc
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -640,7 +707,7 @@ sensor:
     skip_updates: 4
     web_server:
       sorting_group_id: Info
-      sorting_weight: 14    
+      sorting_weight: 14
 
   - name: "Battery State Of Charge"
     id: "battery_soc"
@@ -653,21 +720,21 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "%"
     accuracy_decimals: 0
-    #skip_updates: 29  
+    #skip_updates: 29
     web_server:
       sorting_group_id: Info
-      sorting_weight: 5    
+      sorting_weight: 5
 
-# Slow Sensor
+  # Slow Sensor
   - name: "Battery Total Energy"
     id: "battery_total_energy"
-    icon: mdi:battery-charging-100    
+    icon: mdi:battery-charging-100
     platform: modbus_controller
     device_class: energy_storage
     state_class: measurement
     modbus_controller_id: mt
     register_type: holding
-    address: 32105 
+    address: 32105
     value_type: U_WORD
     unit_of_measurement: "kWh"
     accuracy_decimals: 3
@@ -677,7 +744,7 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 7
-    
+
   - platform: template
     name: "Battery Remaining Capacity"
     id: "battery_remaining_capacity"
@@ -698,7 +765,7 @@ sensor:
 
   - name: "AC Voltage"
     id: "ac_voltage"
-    icon: mdi:current-ac    
+    icon: mdi:current-ac
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -716,7 +783,7 @@ sensor:
 
   - name: "AC Current"
     id: "ac_current"
-    icon: mdi:current-ac    
+    icon: mdi:current-ac
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -732,10 +799,10 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 2
 
-# Slow Sensor
+  # Slow Sensor
   - name: "AC Power"
     id: "ac_power"
-    icon: mdi:flash    
+    icon: mdi:flash
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -748,11 +815,11 @@ sensor:
     skip_updates: 4
     web_server:
       sorting_group_id: Info
-      sorting_weight: 1    
+      sorting_weight: 1
 
   - name: "Gesamte Ladung"
     id: "total_charging_energy"
-    icon: mdi:chart-bar    
+    icon: mdi:chart-bar
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -768,11 +835,11 @@ sensor:
     skip_updates: 59
     web_server:
       sorting_group_id: Info
-      sorting_weight: 12    
+      sorting_weight: 12
 
   - name: "Gesamte Entladung"
     id: "total_discharging_energy"
-    icon: mdi:chart-bar    
+    icon: mdi:chart-bar
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -788,11 +855,11 @@ sensor:
     skip_updates: 59
     web_server:
       sorting_group_id: Info
-      sorting_weight: 13    
+      sorting_weight: 13
 
   - name: "Gesamte Tagesladung"
     id: "daily_charging_energy"
-    icon: mdi:chart-bar    
+    icon: mdi:chart-bar
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -809,10 +876,10 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 8
-      
+
   - name: "Gesamte Tagesentladung"
     id: "daily_discharging_energy"
-    icon: mdi:chart-bar    
+    icon: mdi:chart-bar
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -829,11 +896,11 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 9
-      
-# Slow Sensor
+
+  # Slow Sensor
   - name: "Gesamte Monatsladung"
     id: "monthly_charging_energy"
-    icon: mdi:chart-bar    
+    icon: mdi:chart-bar
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -850,11 +917,11 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 10
-      
-# Slow Sensor
+
+  # Slow Sensor
   - name: "Gesamte Monatsentladung"
     id: "monthly_discharging_energy"
-    icon: mdi:chart-bar    
+    icon: mdi:chart-bar
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -870,11 +937,11 @@ sensor:
     skip_updates: 149
     web_server:
       sorting_group_id: Info
-      sorting_weight: 11    
+      sorting_weight: 11
 
   - name: "Internal Temperature"
     id: "internal_temperature"
-    icon: mdi:thermometer    
+    icon: mdi:thermometer
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -890,10 +957,10 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 19
-      
+
   - name: "Internal MOS1 Temperature"
     id: "internal_mos1_temperature"
-    icon: mdi:thermometer    
+    icon: mdi:thermometer
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -908,12 +975,12 @@ sensor:
     skip_updates: 149
     web_server:
       sorting_group_id: Info
-      sorting_weight: 20    
+      sorting_weight: 20
 
-# Slow Sensor    
+  # Slow Sensor
   - name: "Internal MOS2 Temperature"
     id: "internal_mos2_temperature"
-    icon: mdi:thermometer    
+    icon: mdi:thermometer
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -928,11 +995,11 @@ sensor:
     skip_updates: 149
     web_server:
       sorting_group_id: Info
-      sorting_weight: 21    
+      sorting_weight: 21
 
   - name: "Max. Cell Temperature"
     id: "max_cell_temperature"
-    icon: mdi:thermometer    
+    icon: mdi:thermometer
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -946,10 +1013,10 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 22
-    
+
   - name: "Min. Cell Temperature"
     id: "min_cell_temperature"
-    icon: mdi:thermometer    
+    icon: mdi:thermometer
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -963,66 +1030,9 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 23
-    
-  # - name: "Battery Charge Voltage Limit"
-    # id: "battery_charge_voltage_limit"
-    # icon: mdi:sine-wave    
-    # platform: modbus_controller
-    # modbus_controller_id: mt
-    # register_type: holding
-    # address: 35110
-    # value_type: U_WORD
-    # unit_of_measurement: "V"
-    # device_class: voltage
-    # accuracy_decimals: 1
-    # state_class: measurement
-    # filters:
-      # - multiply: 0.1
-    # web_server:
-      # sorting_group_id: Info
-      # sorting_weight: 16
 
-  # - name: "Battery Charge Current Limit"
-    # id: "battery_charge_current_limit"
-    # icon: mdi:current-dc    
-    # platform: modbus_controller
-    # modbus_controller_id: mt
-    # register_type: holding
-    # address: 35111
-    # value_type: S_WORD
-    # unit_of_measurement: "A"
-    # device_class: current
-    # accuracy_decimals: 1
-    # state_class: measurement
-    # filters:
-      # - multiply: 0.01
-    # skip_updates: 149   
-    # web_server:
-      # sorting_group_id: Info
-      # sorting_weight: 17
-      
-  # - name: "Battery Discharge Current Limit"
-    # id: "battery_discharge_current_limit"
-    # icon: mdi:current-dc    
-    # platform: modbus_controller
-    # modbus_controller_id: mt
-    # register_type: holding
-    # address: 35112
-    # value_type: S_WORD
-    # unit_of_measurement: "A"
-    # device_class: current
-    # accuracy_decimals: 1
-    # state_class: measurement
-    # filters:
-      # - multiply: 0.01
-    # skip_updates: 149       
-    # web_server:
-      # sorting_group_id: Info
-      # sorting_weight: 18
-
-    
   - name: "Max. Zellenspannung"
-    icon: mdi:sine-wave  
+    icon: mdi:sine-wave
     id: max_cell_voltage
     platform: modbus_controller
     modbus_controller_id: mt
@@ -1039,11 +1049,10 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 24
-    
 
   - name: "Min. Zellenspannung"
-    icon: mdi:sine-wave  
-    id: min_cell_voltage  
+    icon: mdi:sine-wave
+    id: min_cell_voltage
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -1059,11 +1068,10 @@ sensor:
     web_server:
       sorting_group_id: Info
       sorting_weight: 25
-    
 
   - platform: template
     name: "Zellspannungsdifferenz"
-    icon: mdi:sine-wave    
+    icon: mdi:sine-wave
     unit_of_measurement: "V"
     device_class: voltage
     accuracy_decimals: 3
@@ -1075,7 +1083,7 @@ sensor:
       return id(max_cell_voltage).state - id(min_cell_voltage).state;
     web_server:
       sorting_group_id: Info
-      sorting_weight: 26    
+      sorting_weight: 26
 
   - platform: wifi_signal
     name: "ESP WiFi Signal Strength"
@@ -1084,7 +1092,7 @@ sensor:
     update_interval: 30s
     web_server:
       sorting_group_id: Diagnostic
-      sorting_weight: 6    
+      sorting_weight: 6
 
 select:
   - name: "RS485 Control Mode"
@@ -1100,9 +1108,9 @@ select:
     skip_updates: 4
     web_server:
       sorting_group_id: Control
-      sorting_weight: 1    
+      sorting_weight: 1
 
-  - name: "Forcible Charge/Discharge" 
+  - name: "Forcible Charge/Discharge"
     id: "forcible_chargedischarge"
     platform: modbus_controller
     modbus_controller_id: mt
@@ -1116,7 +1124,6 @@ select:
     web_server:
       sorting_group_id: Control
       sorting_weight: 4
-    
 
   - name: "Backup Function"
     id: "backup_function"
@@ -1130,7 +1137,7 @@ select:
     skip_updates: 4
     web_server:
       sorting_group_id: Control
-      sorting_weight: 3     
+      sorting_weight: 3
 
   - name: "User Work Mode"
     id: "user_work_mode"
@@ -1151,7 +1158,7 @@ select:
 number:
   - name: "Charge To SOC"
     id: "charge_to_soc"
-    icon: mdi:battery-charging-medium 
+    icon: mdi:battery-charging-medium
     mode: box
     platform: modbus_controller
     modbus_controller_id: mt
@@ -1166,7 +1173,7 @@ number:
     web_server:
       sorting_group_id: Control
       sorting_weight: 9
-      
+
   - name: "Forcible Charge Power"
     id: "forcible_charge_power"
     icon: mdi:tune-variant
@@ -1183,8 +1190,8 @@ number:
     skip_updates: 4
     web_server:
       sorting_group_id: Control
-      sorting_weight: 5    
-    
+      sorting_weight: 5
+
   - name: "Forcible Discharge Power"
     id: "forcible_discharge_power"
     icon: mdi:tune-variant
@@ -1198,10 +1205,10 @@ number:
     min_value: 0
     max_value: 2500
     step: 1
-    skip_updates: 4   
+    skip_updates: 4
     web_server:
       sorting_group_id: Control
-      sorting_weight: 6    
+      sorting_weight: 6
 
   - name: "Charging Cutoff Capacity"
     id: "charging_cutoff_capacity"
@@ -1215,6 +1222,9 @@ number:
     min_value: 80
     max_value: 100
     multiply: 10
+    web_server:
+      sorting_group_id: Control
+      sorting_weight: 7
 
   - name: "Discharging Cutoff Capacity"
     id: "discharging_cutoff_capacity"
@@ -1228,7 +1238,10 @@ number:
     min_value: 12
     max_value: 30
     multiply: 10
-    
+    web_server:
+      sorting_group_id: Control
+      sorting_weight: 8
+
   - name: "Max. Charge Power"
     id: "max_charge_power"
     icon: mdi:tune-variant
@@ -1243,8 +1256,11 @@ number:
     max_value: 2500
     step: 1
     skip_updates: 4
+    web_server:
+      sorting_group_id: Control
+      sorting_weight: 10
 
-# Slow Sensor
+  # Slow Sensor
   - name: "Max. Discharge Power"
     id: "max_discharge_power"
     icon: mdi:tune-variant
@@ -1259,6 +1275,9 @@ number:
     max_value: 2500
     step: 1
     skip_updates: 4
+    web_server:
+      sorting_group_id: Control
+      sorting_weight: 11
 
 light:
   - platform: esp32_rmt_led_strip
@@ -1268,6 +1287,9 @@ light:
     pin: GPIO4
     num_leds: 1
     rgb_order: GRB
+    web_server:
+      sorting_group_id: Diagnostic
+      sorting_weight: 24
     effects:
       - pulse:
           name: "Fast Blink Red"
@@ -1299,66 +1321,57 @@ interval:
     then:
       - lambda: |-
           int new_status = 0;
-
           if (!isnan(id(battery_soc).state) && id(wifi_signal_strength).state > -80) {
-            new_status = 1;  // grün
+            new_status = 1; // grün
           } else if (isnan(id(battery_soc).state) && id(wifi_signal_strength).state < -80) {
-            new_status = 2;  // rot blinkend
+            new_status = 2; // rot blinkend
           } else if (id(wifi_signal_strength).state < -80) {
-            new_status = 3;  // blau blinkend
+            new_status = 3; // blau blinkend
           } else {
-            new_status = 4;  // lila blinkend
+            new_status = 4; // lila blinkend
           }
-
+          
           if (new_status != id(last_led_status)) {
             id(last_led_status) = new_status;
+            
+            // Status 1: grün
+            if (id(last_led_status) == 1) {
+              id(status_led)->turn_on()
+                .set_red(0.0)
+                .set_green(1.0)
+                .set_blue(0.0)
+                .set_brightness(0.3)
+                .set_effect("none")
+                .perform();
+            }
+            
+            // Status 2: rot blinkend
+            else if (id(last_led_status) == 2) {
+              id(status_led)->turn_on()
+                .set_red(1.0)
+                .set_green(0.0)
+                .set_blue(0.0)
+                .set_effect("Fast Blink Red")
+                .perform();
+            }
+            
+            // Status 3: blau blinkend
+            else if (id(last_led_status) == 3) {
+              id(status_led)->turn_on()
+                .set_red(0.0)
+                .set_green(0.0)
+                .set_blue(1.0)
+                .set_effect("Fast Blink Blue")
+                .perform();
+            }
+            
+            // Status 4: lila blinkend
+            else if (id(last_led_status) == 4) {
+              id(status_led)->turn_on()
+                .set_red(1.0)
+                .set_green(0.0)
+                .set_blue(1.0)
+                .set_effect("Fast Blink Purple")
+                .perform();
+            }
           }
-
-      # Status 1: grün
-      - if:
-          condition:
-            lambda: 'return id(last_led_status) == 1;'
-          then:
-            - light.turn_on:
-                id: status_led
-                red: 0%
-                green: 100%
-                brightness: 30%
-                blue: 0%
-                effect: none
-
-      # Status 2: rot blinkend
-      - if:
-          condition:
-            lambda: 'return id(last_led_status) == 2;'
-          then:
-            - light.turn_on:
-                id: status_led
-                red: 100%
-                green: 0%
-                blue: 0%
-                effect: "Fast Blink Red"
-
-      # Status 3: blau blinkend
-      - if:
-          condition:
-            lambda: 'return id(last_led_status) == 3;'
-          then:
-            - light.turn_on:
-                id: status_led
-                red: 0%
-                green: 0%
-                blue: 100%
-                effect: "Fast Blink Blue"
-
-      # Status 4: lila blinkend
-      - if:
-          condition:
-            lambda: 'return id(last_led_status) == 4;'
-          then:
-            - light.turn_on:
-                id: status_led
-                red: 100%
-                green: 0%
-                blue: 100%
-                effect: "Fast Blink Purple"
