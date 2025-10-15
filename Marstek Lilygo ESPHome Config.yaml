@@ -13,7 +13,17 @@ esp32:
       CONFIG_ESPTOOLPY_FLASHSIZE_4MB: "y"
       CONFIG_SPIRAM_SUPPORT: "n"
       CONFIG_BT_ENABLED: "n"
-
+      CONFIG_ESPTOOLPY_FLASHMODE_QIO: "y"
+      CONFIG_ESPTOOLPY_FLASHFREQ_80M: "y"
+      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
+      CONFIG_ESP32_ALLOW_RTC_FAST_MEM_AS_HEAP: "y"
+      CONFIG_LWIP_TCPIP_RECVMBOX_SIZE: "32"
+      CONFIG_LWIP_TCP_MSS: "1436"
+      CONFIG_LWIP_TCP_SND_BUF_DEFAULT: "5744"
+      CONFIG_LWIP_TCP_WND_DEFAULT: "5744"
+      CONFIG_ESP_TASK_WDT_TIMEOUT_S: "10"
+      CONFIG_UART_ISR_IN_IRAM: "y"
+      
 logger:
   baud_rate: 0
   level: WARN
@@ -21,6 +31,7 @@ logger:
 api:
   encryption:
     key: !secret api_encryption_key
+  batch_delay: 50ms
 
 ota:
   - platform: esphome
@@ -32,6 +43,7 @@ wifi:
   fast_connect: true
   enable_btm: true
   reboot_timeout: 5min
+  power_save_mode: none 
   manual_ip:
     static_ip: 192.168.178.160
     gateway: 192.168.178.1
@@ -101,15 +113,16 @@ uart:
 modbus:
   - uart_id: mod_bus
     id: modbus1
-    send_wait_time: 30ms
+    send_wait_time: 50ms
 
 modbus_controller:
   - id: mt
     address: 0x1
     modbus_id: modbus1
-    command_throttle: 30ms
-    update_interval: 2s
-    #offline_skip_updates: 5
+    setup_priority: -100    
+    command_throttle: 50ms
+    update_interval: 3s
+    offline_skip_updates: 5
 
 text_sensor:
   - platform: template
@@ -605,7 +618,9 @@ sensor:
     unit_of_measurement: "dBm"
     accuracy_decimals: 0
     filters:
-      - multiply: -1
+      - multiply: -1    
+      - delta: 3.0    
+    skip_updates: 99
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 7
@@ -678,6 +693,7 @@ sensor:
     state_class: measurement
     filters:
       - multiply: 0.01
+      - delta: 0.1 
     web_server:
       sorting_group_id: Info
       sorting_weight: 16
@@ -693,9 +709,10 @@ sensor:
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 2
-    state_class: measurement
     filters:
       - multiply: 0.01
+      - throttle_average: 2s
+      - delta: 0.05
     web_server:
       sorting_group_id: Info
       sorting_weight: 15
@@ -711,7 +728,9 @@ sensor:
     device_class: power
     state_class: measurement
     accuracy_decimals: 0
-    skip_updates: 4
+    #skip_updates: 4
+    filters:
+     - throttle: 1s    
     web_server:
       sorting_group_id: Info
       sorting_weight: 14
@@ -727,7 +746,9 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "%"
     accuracy_decimals: 0
-    #skip_updates: 29
+    skip_updates: 59
+    filters:
+     - delta: 1.0
     web_server:
       sorting_group_id: Info
       sorting_weight: 5
@@ -784,6 +805,8 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
+      - delta: 1.0
+      - throttle: 2s 
     web_server:
       sorting_group_id: Info
       sorting_weight: 3
@@ -802,6 +825,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
+      - throttle_average: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 2
@@ -819,7 +843,8 @@ sensor:
     device_class: power
     state_class: measurement
     accuracy_decimals: 0
-    skip_updates: 4
+    filters:
+     - throttle: 1s    
     web_server:
       sorting_group_id: Info
       sorting_weight: 1
@@ -960,6 +985,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
+      - delta: 0.5
     skip_updates: 149
     web_server:
       sorting_group_id: Info
@@ -979,6 +1005,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
+      - delta: 1.0
     skip_updates: 149
     web_server:
       sorting_group_id: Info
@@ -999,6 +1026,7 @@ sensor:
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
+      - delta: 1.0
     skip_updates: 149
     web_server:
       sorting_group_id: Info
@@ -1017,6 +1045,9 @@ sensor:
     state_class: measurement
     accuracy_decimals: 1
     skip_updates: 149
+    filters:
+     - multiply: 0.1
+     - delta: 0.5
     web_server:
       sorting_group_id: Info
       sorting_weight: 22
@@ -1034,6 +1065,9 @@ sensor:
     state_class: measurement
     accuracy_decimals: 1
     skip_updates: 149
+    filters:
+     - multiply: 0.1
+     - delta: 0.5    
     web_server:
       sorting_group_id: Info
       sorting_weight: 23
@@ -1096,7 +1130,9 @@ sensor:
     name: "ESP WiFi Signal Strength"
     icon: mdi:wifi
     id: "esp_wifi_signal_strength"
-    update_interval: 30s
+    update_interval: 300s
+    filters:
+      - delta: 5.0 
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 6
@@ -1324,7 +1360,7 @@ globals:
     initial_value: '0'
 
 interval:
-  - interval: 5s
+  - interval: 10s
     then:
       - lambda: |-
           int new_status = 0;
