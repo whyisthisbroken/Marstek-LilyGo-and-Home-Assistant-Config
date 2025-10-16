@@ -709,6 +709,7 @@ sensor:
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 2
+    state_class: measurement
     filters:
       - multiply: 0.01
       - throttle_average: 2s
