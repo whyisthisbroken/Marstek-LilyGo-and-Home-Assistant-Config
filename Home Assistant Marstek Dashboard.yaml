@@ -42,49 +42,28 @@ badges:
 sections:
   - type: grid
     cards:
-      - type: vertical-stack
-        cards:
-          - type: custom:mushroom-title-card
-            title: ⚡ AC & DC Werte
-          - type: custom:mushroom-entity-card
-            entity: sensor.marstek_ac_power
-            name: AC Power
-            icon: mdi:flash
-            icon_color: yellow
-          - type: custom:mushroom-entity-card
-            entity: sensor.marstek_ac_voltage
-            name: AC Volt
-            icon: mdi:power-plug
-          - type: custom:mushroom-entity-card
-            entity: sensor.marstek_ac_current
-            name: AC Strom
-            icon: mdi:current-ac
-          - type: custom:mushroom-entity-card
-            entity: sensor.marstek_battery_voltage
-            name: DC Volt
-            icon: mdi:power-socket
-          - type: custom:mushroom-entity-card
-            entity: sensor.marstek_battery_current
-            name: DC Strom
-            icon: mdi:current-dc
-          - type: custom:mushroom-entity-card
-            entity: sensor.marstek_battery_power
-            name: DC Power
-            icon: mdi:flash-outline
-  - type: grid
-    cards:
       - type: custom:mushroom-title-card
         title: 🧰 Zellinfos
       - type: horizontal-stack
         cards:
-          - type: custom:mushroom-entity-card
+          - type: tile
             entity: sensor.marstek_battery_state_of_charge
             name: Ladezustand
             icon: mdi:battery-charging
-          - type: custom:mushroom-entity-card
+            features_position: bottom
+            vertical: false
+            show_entity_picture: false
+            hide_state: false
+            features:
+              - type: bar-gauge
+          - type: tile
             entity: sensor.marstek_battery_remaining_capacity
             name: Restkapazität
             icon: mdi:battery
+            features_position: bottom
+            vertical: false
+            features:
+              - type: trend-graph
       - type: vertical-stack
         cards:
           - type: custom:mushroom-template-badge
@@ -155,6 +134,37 @@ sections:
       - type: vertical-stack
         cards:
           - type: custom:mushroom-title-card
+            title: ⚡ AC & DC Werte
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_ac_power
+            name: AC Power
+            icon: mdi:flash
+            icon_color: yellow
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_ac_voltage
+            name: AC Volt
+            icon: mdi:power-plug
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_ac_current
+            name: AC Strom
+            icon: mdi:current-ac
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_battery_voltage
+            name: DC Volt
+            icon: mdi:power-socket
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_battery_current
+            name: DC Strom
+            icon: mdi:current-dc
+          - type: custom:mushroom-entity-card
+            entity: sensor.marstek_battery_power
+            name: DC Power
+            icon: mdi:flash-outline
+  - type: grid
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:mushroom-title-card
             title: 🌐 Netzwerk & Verbindung
           - type: custom:mushroom-entity-card
             entity: sensor.marstek_esphome_ip
@@ -188,11 +198,23 @@ sections:
             name: Monats-Effizienz
             icon: mdi:calendar-month
             icon_color: purple
+            hold_action:
+              action: none
+            double_tap_action:
+              action: none
+            tap_action:
+              action: more-info
           - type: custom:mushroom-entity-card
             entity: sensor.totale_effizienz
             name: Totale-Effizienz
             icon: mdi:battery-high
             icon_color: blue
+            tap_action:
+              action: more-info
+            hold_action:
+              action: none
+            double_tap_action:
+              action: none
       - type: vertical-stack
         cards:
           - type: custom:mushroom-entity-card
