@@ -121,7 +121,7 @@ Once the initial USB flash is successful:
 ## 📚 Useful Resources
 
 - 🔗 [ESPHome Documentation](https://esphome.io)
-- 🔗 [LilyGO T-CAN485 GitHub Repository](https://github.com/Xinyuan-LilyGO/T-Display-S3)
+- 🔗 [LilyGO T-CAN485 GitHub Repository](https://github.com/Xinyuan-LilyGO/T-CAN485)
 
 ---
 
