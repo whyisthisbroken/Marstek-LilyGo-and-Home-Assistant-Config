@@ -361,7 +361,7 @@ binary_sensor:
     modbus_controller_id: mt
     register_type: holding
     address: 36000
-    bitmask: 0x16
+    bitmask: 0x10
     web_server:
       sorting_group_id: Warnings
       sorting_weight: 5
@@ -373,7 +373,7 @@ binary_sensor:
     modbus_controller_id: mt
     register_type: holding
     address: 36000
-    bitmask: 0x32
+    bitmask: 0x20
     web_server:
       sorting_group_id: Warnings
       sorting_weight: 6
@@ -385,7 +385,7 @@ binary_sensor:
     modbus_controller_id: mt
     register_type: holding
     address: 36000
-    bitmask: 0x64
+    bitmask: 0x40
     web_server:
       sorting_group_id: Warnings
       sorting_weight: 7
