@@ -692,8 +692,9 @@ sensor:
     accuracy_decimals: 2
     state_class: measurement
     filters:
-      - multiply: 0.01
-      - delta: 0.1 
+      - multiply: 0.1
+      - delta: 0.5
+      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 16
@@ -712,8 +713,8 @@ sensor:
     state_class: measurement
     filters:
       - multiply: 0.01
-      - throttle_average: 2s
-      - delta: 0.05
+      - delta: 0.25
+      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 15
@@ -729,9 +730,9 @@ sensor:
     device_class: power
     state_class: measurement
     accuracy_decimals: 0
-    #skip_updates: 4
     filters:
-     - throttle: 1s    
+      - delta: 5.0
+      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 14
@@ -807,7 +808,7 @@ sensor:
     filters:
       - multiply: 0.1
       - delta: 1.0
-      - throttle: 2s 
+      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 3
@@ -826,7 +827,8 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-      - throttle_average: 2s
+      - delta: 0.25
+      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 2
@@ -845,7 +847,8 @@ sensor:
     state_class: measurement
     accuracy_decimals: 0
     filters:
-     - throttle: 1s    
+      - delta: 5.0
+      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 1
