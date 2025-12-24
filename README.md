@@ -41,18 +41,6 @@ You'll find:
 - **Stylized Lovelace dashboard with dynamic color states**  
   Fully themed interface using Mushroom UI Cards with templated badges and entity cards.
 
-## 🚀 Latest Update: v2.0 (October 15, 2025)
-
-**Major Performance Optimization Release!**
-
-- ✨ **56% fewer API calls** (~250 → ~110 updates/min)
-- ⚡ **93% faster** Battery Power response (15s → 1s)
-- 💾 **12-15 KB less RAM** usage
-- 📶 **35-40% less network** traffic
-
-This update uses intelligent sensor filtering to dramatically improve efficiency while maintaining full accuracy. All updates are backward-compatible!
-
-👉 See [CHANGELOG.md](CHANGELOG.md) for detailed technical information.
 
 
 ## 📦 Requirements
