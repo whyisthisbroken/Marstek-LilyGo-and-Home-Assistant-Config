@@ -45,12 +45,13 @@ You'll find:
 
 ## 📦 Requirements
 
-- ✅ Home Assistant (2023.6+ recommended)
+
 - ✅ [ESPHome](https://esphome.io) (configured via USB or OTA)
-- ✅ [HACS](https://hacs.xyz) – Home Assistant Community Store
 - ✅ [Mushroom UI Cards](https://github.com/piitaya/lovelace-mushroom)
 - ✅ LilyGO T-Display RS485 (`T-CAN485`)
 - ✅ Marstek Battery with RS485 Modbus support
+- ✅ Home Assistant (not a must have)
+- ✅ [HACS](https://hacs.xyz) – Home Assistant Community Store (Only if you Use Home Assistant)
 ---
 
 ## 📸 Screenshots
