@@ -1,12 +1,9 @@
-path: marstekbattery
-icon: mdi:battery
 type: sections
+path: marstekbattery2
+icon: mdi:battery
 max_columns: 3
 dense_section_placement: true
 header:
-  card:
-    type: markdown
-    content: "# 🔋 Marstek Batterie Übersicht"
   layout: center
   badges_position: bottom
   badges_wrap: wrap
@@ -14,22 +11,18 @@ badges:
   - type: custom:mushroom-template-badge
     content: "Status: {{ states('sensor.marstek_inverter_state') }}"
     icon: mdi:battery-sync
-    color: |
+    color: >
       {% if states('sensor.marstek_inverter_state') in ['Online', 'Running'] %}
-        green
-      {% else %}
-        red
-      {% endif %}
+      green {% else %} red {% endif %}
   - type: custom:mushroom-template-badge
-    content: |
-      WiFi Signal: {{ states('sensor.marstek_wifi_signal_strength') }} dBm
+    content: "WiFi Signal: {{ states('sensor.marstek_wifi_signal_strength') }} dBm"
     icon: mdi:wifi
     color: >
       {% set rssi = states('sensor.marstek_wifi_signal_strength') | int %} {% if
       rssi < -80 %} red {% elif rssi < -65 %} orange {% else %} green {% endif
       %}
   - type: custom:mushroom-template-badge
-    content: >
+    content: >-
       Temp intern: {{ states('sensor.marstek_internal_temperature') | float |
       round(1) }}°C
     icon: mdi:thermometer
@@ -44,22 +37,70 @@ sections:
     cards:
       - type: custom:mushroom-title-card
         title: 🧰 Zellinfos
+      - features:
+          - type: bar-gauge
+        type: tile
+        entity: sensor.marstek_battery_state_of_charge
+        name: Ladezustand
+        icon: mdi:battery-charging
+        features_position: inline
+        vertical: false
+        show_entity_picture: false
+        hide_state: false
+        state_content:
+          - state
+          - last_changed
+      - type: custom:button-card
+        aspect_ratio: 1/0.1
+        entity: sensor.marstek_ac_power
+        show_state: true
+        show_label: true
+        show_name: false
+        show_icon: false
+        state_display: |
+          [[[
+            const acPower = parseFloat(entity.state);
+            if (isNaN(acPower)) return "❓ Keine Werte";
+            if (Math.abs(acPower) < 10) return "💤 Standby";
+            if (acPower < -10) return `⬇️ Lädt mit ${Math.abs(acPower)} W`;
+            if (acPower > 10) return `⬆️ Entlädt mit ${acPower} W`;
+            return "💤 Standby";
+          ]]]
+        label: |
+          [[[
+            const battPower = parseFloat(states['sensor.marstek_battery_power']?.state) || 0;
+            const runtime = states['sensor.marstek_venus_e_battery_runtime_estimate']?.state || "";
+            if (!runtime || runtime === "unavailable" || runtime === "unknown") return "";
+            return `🔋 ${runtime}`;
+          ]]]
+        styles:
+          card:
+            - background: var(--card-background-color)
+            - box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15)
+            - border-radius: 16px
+            - padding: 12px
+            - display: flex
+            - flex-direction: column
+            - align-items: center
+            - justify-content: center
+            - transition: all 0.3s ease
+          state:
+            - font-size: 1em
+            - font-weight: bold
+            - color: var(--primary-text-color)
+            - text-align: center
+          label:
+            - font-size: 0.8em
+            - color: var(--secondary-text-color)
+            - margin-top: 4px
+            - text-align: center
       - type: horizontal-stack
         cards:
-          - type: tile
-            entity: sensor.marstek_battery_state_of_charge
-            name: Ladezustand
-            icon: mdi:battery-charging
-            features_position: bottom
-            vertical: false
-            show_entity_picture: false
-            hide_state: false
-            features:
-              - type: bar-gauge
           - type: tile
             entity: sensor.marstek_battery_remaining_capacity
             name: Restkapazität
             icon: mdi:battery
+            color: teal
             features_position: bottom
             vertical: false
             features:
@@ -101,231 +142,291 @@ sections:
             entity: sensor.marstek_zellspannungsdifferenz
           - type: horizontal-stack
             cards:
-              - type: custom:mushroom-entity-card
+              - type: tile
                 entity: sensor.marstek_max_zellenspannung
                 name: Maximale Zellensp.
                 icon: mdi:flash-outline
-              - type: custom:mushroom-entity-card
+                color: orange
+              - type: tile
                 entity: sensor.marstek_min_zellenspannung
                 name: Minimale Zellensp.
                 icon: mdi:flash-outline
+                color: green
           - type: horizontal-stack
             cards:
-              - type: custom:mushroom-entity-card
+              - type: tile
                 entity: sensor.marstek_internal_mos1_temperature
                 name: MOS1 Temp.
                 icon: mdi:thermometer-lines
-              - type: custom:mushroom-entity-card
+                color: teal
+              - type: tile
                 entity: sensor.marstek_internal_mos2_temperature
                 name: MOS2 Temp.
                 icon: mdi:thermometer-lines
+                color: teal
           - type: horizontal-stack
             cards:
-              - type: custom:mushroom-entity-card
+              - type: tile
                 entity: sensor.marstek_max_cell_temperature
                 name: Zelltemp. Max
                 icon: mdi:thermometer-high
-              - type: custom:mushroom-entity-card
+                color: red
+              - type: tile
                 entity: sensor.marstek_min_cell_temperature
                 name: Zelltemp. Min
                 icon: mdi:thermometer-low
+                color: green
   - type: grid
     cards:
       - type: vertical-stack
         cards:
           - type: custom:mushroom-title-card
             title: ⚡ AC & DC Werte
-          - type: custom:mushroom-entity-card
+          - type: tile
             entity: sensor.marstek_ac_power
             name: AC Power
             icon: mdi:flash
-            icon_color: yellow
-          - type: custom:mushroom-entity-card
+            color: yellow
+          - type: tile
             entity: sensor.marstek_ac_voltage
             name: AC Volt
             icon: mdi:power-plug
-          - type: custom:mushroom-entity-card
+            color: red
+          - type: tile
             entity: sensor.marstek_ac_current
             name: AC Strom
             icon: mdi:current-ac
-          - type: custom:mushroom-entity-card
+            color: orange
+          - type: tile
             entity: sensor.marstek_battery_voltage
             name: DC Volt
             icon: mdi:power-socket
-          - type: custom:mushroom-entity-card
+            color: teal
+          - type: tile
             entity: sensor.marstek_battery_current
             name: DC Strom
             icon: mdi:current-dc
-          - type: custom:mushroom-entity-card
+            color: cyan
+          - type: tile
             entity: sensor.marstek_battery_power
             name: DC Power
             icon: mdi:flash-outline
+            color: blue
   - type: grid
     cards:
       - type: vertical-stack
         cards:
           - type: custom:mushroom-title-card
             title: 🌐 Netzwerk & Verbindung
-          - type: custom:mushroom-entity-card
+          - type: tile
             entity: sensor.marstek_esphome_ip
             name: IP-Adresse
-          - type: custom:mushroom-entity-card
+            icon: mdi:ip
+            color: grey
+          - type: tile
             entity: sensor.marstek_esphome_ssid
             name: WLAN SSID
-          - type: custom:mushroom-entity-card
+            icon: mdi:wifi
+            color: light-blue
+          - type: tile
             entity: sensor.marstek_battery_wifi_status
             name: WLAN-Status
-          - type: custom:mushroom-entity-card
+            icon: mdi:wifi-strength-3
+            color: green
+          - type: tile
             entity: sensor.marstek_bt_status
             name: Bluetooth-Status
-          - type: custom:mushroom-entity-card
+            icon: mdi:bluetooth
+            color: blue
+          - type: tile
             entity: sensor.marstek_cloud_status
             name: Cloud-Anbindung
-          - type: custom:mushroom-entity-card
+            icon: mdi:cloud-check
+            color: indigo
+          - type: tile
             entity: binary_sensor.marstek_network_abnormal
             name: Netzwerk Problem
-          - type: custom:mushroom-entity-card
+            icon: mdi:network-off
+            color: red
+          - type: tile
             entity: binary_sensor.marstek_wifi_abnormal
             name: WLAN Problem
+            icon: mdi:wifi-off
+            color: red
   - type: grid
     cards:
       - type: custom:mushroom-title-card
         title: 📊 Energie-Ertrag
       - type: vertical-stack
         cards:
-          - type: custom:mushroom-entity-card
+          - type: tile
             entity: sensor.monats_effizienz
             name: Monats-Effizienz
             icon: mdi:calendar-month
-            icon_color: purple
-            hold_action:
-              action: none
-            double_tap_action:
-              action: none
+            color: purple
             tap_action:
               action: more-info
-          - type: custom:mushroom-entity-card
+          - type: tile
             entity: sensor.totale_effizienz
             name: Totale-Effizienz
             icon: mdi:battery-high
-            icon_color: blue
+            color: blue
             tap_action:
               action: more-info
-            hold_action:
-              action: none
-            double_tap_action:
-              action: none
       - type: vertical-stack
         cards:
-          - type: custom:mushroom-entity-card
+          - type: tile
             entity: sensor.marstekbattery_gesamte_tagesladung
             name: Tagesladung
             icon: mdi:calendar-today
-          - type: custom:mushroom-entity-card
+            color: amber
+          - type: tile
             entity: sensor.marstekbattery_gesamte_tagesentladung
             name: Tagesentladung
             icon: mdi:calendar-today-outline
-          - type: custom:mushroom-entity-card
+            color: amber
+          - type: tile
             entity: sensor.marstekbattery_gesamte_monatsladung
             name: Monatsladung
             icon: mdi:calendar-month
-          - type: custom:mushroom-entity-card
+            color: teal
+          - type: tile
             entity: sensor.marstekbattery_gesamte_monatsentladung
             name: Monatsentladung
             icon: mdi:calendar-month-outline
-          - type: custom:mushroom-entity-card
+            color: teal
+          - type: tile
             entity: sensor.batterie_ladung
             name: Gesamte Ladung
             icon: mdi:calendar-month-outline
-          - type: custom:mushroom-entity-card
+            color: green
+          - type: tile
             entity: sensor.batterie_entladung
             name: Gesamte Entladung
             icon: mdi:calendar-month-outline
+            color: red
       - type: vertical-stack
         cards:
           - type: custom:mushroom-title-card
             title: 📦 Systeminformationen
-          - type: custom:mushroom-entity-card
+          - type: tile
             entity: sensor.marstek_software_version
             name: Software-Version
-          - type: custom:mushroom-entity-card
+            icon: mdi:information
+            color: brown
+          - type: tile
             entity: sensor.marstek_firmware_version
             name: Firmware-Version
-          - type: custom:mushroom-entity-card
+            icon: mdi:chip
+            color: grey
+          - type: tile
             entity: sensor.marstek_bms_version
             name: BMS-Version
-          - type: custom:mushroom-entity-card
+            icon: mdi:memory
+            color: teal
+          - type: tile
             entity: sensor.marstek_esp_version
             name: ESPHome-Version
+            icon: mdi:new-box
+            features_position: bottom
+            vertical: false
+            color: accent
   - type: grid
     cards:
       - type: vertical-stack
         cards:
           - type: custom:mushroom-title-card
             title: ⚙️ Steuerung & Einstellungen
-          - type: custom:mushroom-entity-card
+          - type: tile
             entity: number.marstek_forcible_charge_power
             name: Forcierte Ladung
             icon: mdi:battery-plus
-          - type: custom:mushroom-entity-card
+            color: purple
+          - type: tile
             entity: number.marstek_forcible_discharge_power
             name: Forcierte Entladung
             icon: mdi:battery-minus
-          - type: custom:mushroom-entity-card
+            color: purple
+          - type: tile
             entity: number.marstek_max_charge_power
             name: Max. Ladeleistung
             icon: mdi:transmission-tower-export
-          - type: custom:mushroom-entity-card
+            color: orange
+          - type: tile
             entity: number.marstek_max_discharge_power
             name: Max. Entladeleistung
             icon: mdi:transmission-tower-import
-          - type: custom:mushroom-entity-card
+            color: orange
+          - type: tile
             entity: number.marstek_charge_to_soc
             name: Ladeziel-SOC
             icon: mdi:battery-charging-100
-          - type: custom:mushroom-entity-card
+            color: green
+          - type: tile
             entity: number.marstek_charging_cutoff_capacity
             name: Ladeabschaltung bei
             icon: mdi:battery-off
-          - type: custom:mushroom-entity-card
+            color: red
+          - type: tile
             entity: number.marstek_discharging_cutoff_capacity
             name: Entladeabschaltung bei
             icon: mdi:battery-arrow-down
-          - type: custom:mushroom-entity-card
+            color: red
+          - type: tile
             entity: select.marstek_user_work_mode
             name: Work Mode
             icon: mdi:cog-outline
-          - type: custom:mushroom-entity-card
+            color: amber
+          - type: tile
             entity: button.stick_restart
             name: Stick Neustarten
             icon: mdi:restart
+            color: red
+            tap_action:
+              action: call-service
+              service: button.press
+              service_data:
+                entity_id: button.stick_restart
   - type: grid
     cards:
       - type: vertical-stack
         cards:
           - type: custom:mushroom-title-card
             title: 🚨 Fehler & Warnungen
-          - type: custom:mushroom-entity-card
+          - type: tile
             entity: binary_sensor.marstek_fan_abnormal_warning
             name: Lüfterfehler
-          - type: custom:mushroom-entity-card
+            icon: mdi:fan-alert
+            color: red
+          - type: tile
             entity: binary_sensor.marstek_low_battery_soc_warning
             name: SOC niedrig
-          - type: custom:mushroom-entity-card
+            icon: mdi:battery-alert
+            color: orange
+          - type: tile
             entity: binary_sensor.marstek_overtemperature_limit
             name: Übertemperatur
-          - type: custom:mushroom-entity-card
+            icon: mdi:thermometer-alert
+            color: red
+          - type: tile
             entity: binary_sensor.marstek_grid_overvoltage
             name: Netzspannung zu hoch
-          - type: custom:mushroom-entity-card
+            icon: mdi:power-plug-off
+            color: red
+          - type: tile
             entity: binary_sensor.marstek_bat_communication_failure
             name: Kommunikation Batterie
-          - type: custom:mushroom-entity-card
+            icon: mdi:link-off
+            color: orange
+          - type: tile
             entity: binary_sensor.marstek_bms_protect
             name: BMS Schutz aktiv
-          - type: custom:mushroom-entity-card
+            icon: mdi:shield-alert
+            color: red
+          - type: tile
             entity: sensor.marstek_power_restriction
             name: Leistungsbeschränkung
             icon: mdi:alert
+            color: amber
 cards: []
-title: Marstek
+top_margin: false
