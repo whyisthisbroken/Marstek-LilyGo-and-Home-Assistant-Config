@@ -1,6 +1,11 @@
 esphome:
   name: marstek
   friendly_name: Marstek Venus E
+  on_boot:
+    priority: -100
+    then:
+      - delay: 30s
+      - component.update: battery_remaining_capacity
 
 ##THIS CONFIG IS ONLY FOR THE LILYGO T-CAN485, ITS NOT TESTET ON ANY OTHER DEVICE##
 
@@ -26,6 +31,7 @@ esp32:
       CONFIG_LOG_MAXIMUM_LEVEL_WARN: "y"
       CONFIG_LWIP_IRAM_OPTIMIZATION: "y"
       CONFIG_LWIP_IPV6: "n"
+      CONFIG_LWIP_MAX_SOCKETS: "14"
       CONFIG_LWIP_SO_REUSE: "y"
       CONFIG_LWIP_STATS: "n"
       CONFIG_LWIP_TCPIP_RECVMBOX_SIZE: "32"
@@ -48,7 +54,6 @@ api:
 ota:
   - platform: esphome
     password: !secret ota_password
-  - platform: web_server
 
 wifi:
   ssid: !secret wifi_ssid
@@ -187,6 +192,60 @@ text_sensor:
       sorting_group_id: Info
       sorting_weight: 4
 
+  - platform: template
+    name: "Battery Runtime Estimate"
+    id: "battery_runtime_estimate"
+    icon: mdi:clock-outline
+    update_interval: 10s
+    lambda: |-
+      float soc = id(battery_soc).state;
+      float power = id(battery_power).state;
+      float cap_total = 5120.0;  // Wh
+      float cap_min = 665.6;     // Wh (13% von 5120)
+      float cap_now = (soc / 100.0) * cap_total;
+      
+      // Prüfe ob Werte gültig sind
+      if (isnan(soc) || isnan(power)) {
+        return {"Unbekannt"};
+      }
+      
+      // Leer
+      if (soc <= 13) {
+        return {"Leer"};
+      }
+      
+      // Laden (Power > 20W)
+      if (power > 20.0) {
+        float wh_needed = cap_total - cap_now;
+        float hours = wh_needed / power;
+        int hours_int = (int)hours;
+        int minutes = (int)((hours - hours_int) * 60);
+        
+        char buffer[30];
+        sprintf(buffer, "Voll in: %dh %dmin", hours_int, minutes);
+        return {buffer};
+      }
+      
+      // Entladen (Power < -20W)
+      else if (power < -20.0) {
+        float wh_available = cap_now - cap_min;
+        float hours = wh_available / abs(power);
+        int hours_int = (int)hours;
+        int minutes = (int)((hours - hours_int) * 60);
+        
+        char buffer[30];
+        sprintf(buffer, "Leer in: %dh %dmin", hours_int, minutes);
+        return {buffer};
+      }
+      
+      // Standby
+      else {
+        return {"Standby"};
+      }
+    web_server:
+      sorting_group_id: Info
+      sorting_weight: 17
+
   - platform: wifi_info
     ip_address:
       name: ESPHome IP
@@ -316,6 +375,7 @@ binary_sensor:
   - platform: status
     name: "ESP WiFi Status"
     id: "esp_wifi_status"
+    icon: mdi:wifi-alert
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 5
@@ -611,7 +671,7 @@ binary_sensor:
 sensor:
   - platform: modbus_controller
     id: inverter_state
-    icon: mdi:state-machine
+    icon: mdi:chart-bubble
     modbus_controller_id: mt
     register_type: holding
     address: 35100
@@ -632,8 +692,8 @@ sensor:
     unit_of_measurement: "dBm"
     accuracy_decimals: 0
     filters:
-      - multiply: -1    
-      - delta: 3.0    
+      - multiply: -1
+      - delta: 3.0
     skip_updates: 99
     web_server:
       sorting_group_id: Diagnostic
@@ -646,6 +706,7 @@ sensor:
     register_type: holding
     address: 31100
     value_type: U_WORD
+    register_count: 3
     accuracy_decimals: 0
     skip_updates: 149
     internal: true
@@ -701,6 +762,7 @@ sensor:
     register_type: holding
     address: 32100
     value_type: U_WORD
+    register_count: 6
     unit_of_measurement: "V"
     device_class: voltage
     accuracy_decimals: 2
@@ -735,6 +797,7 @@ sensor:
 
   - name: "Battery Power"
     id: "battery_power"
+    icon: mdi:generator-portable
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -753,6 +816,10 @@ sensor:
 
   - name: "Battery State Of Charge"
     id: "battery_soc"
+    icon: mdi:percent-box-outline
+    on_value:
+      then:
+        - component.update: battery_remaining_capacity
     platform: modbus_controller
     device_class: battery
     state_class: measurement
@@ -762,14 +829,13 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "%"
     accuracy_decimals: 0
-    skip_updates: 59
+    skip_updates: 29
     filters:
      - delta: 1.0
     web_server:
       sorting_group_id: Info
       sorting_weight: 5
 
-  # Slow Sensor
   - name: "Battery Total Energy"
     id: "battery_total_energy"
     icon: mdi:battery-charging-100
@@ -784,7 +850,7 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    skip_updates: 149
+    skip_updates: 29
     web_server:
       sorting_group_id: Info
       sorting_weight: 7
@@ -795,7 +861,7 @@ sensor:
     icon: mdi:battery-arrow-down-outline
     unit_of_measurement: "kWh"
     accuracy_decimals: 2
-    update_interval: 120s
+    update_interval: never
     lambda: |-
       if (id(battery_total_energy).has_state() && id(battery_soc).has_state()) {
         float total_energy = id(battery_total_energy).state;
@@ -815,13 +881,14 @@ sensor:
     register_type: holding
     address: 32200
     value_type: U_WORD
+    register_count: 4
     unit_of_measurement: "V"
     device_class: voltage
     state_class: measurement
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
-      - delta: 1.0
+      - delta: 0.5
       - throttle: 2s
     web_server:
       sorting_group_id: Info
@@ -847,7 +914,6 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 2
 
-  # Slow Sensor
   - name: "AC Power"
     id: "ac_power"
     icon: mdi:flash
@@ -875,13 +941,13 @@ sensor:
     register_type: holding
     address: 33000
     value_type: U_DWORD
+    register_count: 12
     unit_of_measurement: "kWh"
     device_class: energy
     state_class: total_increasing
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-    register_count: 2
     skip_updates: 59
     web_server:
       sorting_group_id: Info
@@ -901,7 +967,6 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-    register_count: 2
     skip_updates: 59
     web_server:
       sorting_group_id: Info
@@ -921,7 +986,6 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-    register_count: 2
     skip_updates: 59
     web_server:
       sorting_group_id: Info
@@ -941,13 +1005,11 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-    register_count: 2
     skip_updates: 59
     web_server:
       sorting_group_id: Info
       sorting_weight: 9
 
-  # Slow Sensor
   - name: "Gesamte Monatsladung"
     id: "monthly_charging_energy"
     icon: mdi:chart-bar
@@ -962,13 +1024,11 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-    register_count: 2
-    skip_updates: 149
+    skip_updates: 59
     web_server:
       sorting_group_id: Info
       sorting_weight: 10
 
-  # Slow Sensor
   - name: "Gesamte Monatsentladung"
     id: "monthly_discharging_energy"
     icon: mdi:chart-bar
@@ -983,8 +1043,7 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-    register_count: 2
-    skip_updates: 149
+    skip_updates: 59
     web_server:
       sorting_group_id: Info
       sorting_weight: 11
@@ -997,6 +1056,7 @@ sensor:
     register_type: holding
     address: 35000
     value_type: S_WORD
+    register_count: 3
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
@@ -1029,7 +1089,6 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 20
 
-  # Slow Sensor
   - name: "Internal MOS2 Temperature"
     id: "internal_mos2_temperature"
     icon: mdi:thermometer
@@ -1058,6 +1117,7 @@ sensor:
     register_type: holding
     address: 35010
     value_type: S_WORD
+    register_count: 2
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
@@ -1098,6 +1158,7 @@ sensor:
     register_type: holding
     address: 37007
     value_type: U_WORD
+    register_count: 2
     unit_of_measurement: "V"
     device_class: voltage
     accuracy_decimals: 2
@@ -1150,7 +1211,7 @@ sensor:
     id: "esp_wifi_signal_strength"
     update_interval: 300s
     filters:
-      - delta: 5.0 
+      - delta: 5.0
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 6
@@ -1173,6 +1234,7 @@ select:
 
   - name: "Forcible Charge/Discharge"
     id: "forcible_chargedischarge"
+    icon: mdi:battery-sync
     platform: modbus_controller
     modbus_controller_id: mt
     address: 42010
@@ -1188,6 +1250,7 @@ select:
 
   - name: "Backup Function"
     id: "backup_function"
+    icon: mdi:backup-restore
     platform: modbus_controller
     modbus_controller_id: mt
     address: 41200
@@ -1343,6 +1406,7 @@ number:
 light:
   - platform: esp32_rmt_led_strip
     id: status_led
+    icon: mdi:led-outline
     name: "Status LED"
     chipset: WS2812
     pin: GPIO4
@@ -1391,10 +1455,8 @@ interval:
           } else {
             new_status = 4; // lila blinkend
           }
-          
           if (new_status != id(last_led_status)) {
             id(last_led_status) = new_status;
-            
             // Status 1: grün
             if (id(last_led_status) == 1) {
               id(status_led)->turn_on()
@@ -1405,7 +1467,6 @@ interval:
                 .set_effect("none")
                 .perform();
             }
-            
             // Status 2: rot blinkend
             else if (id(last_led_status) == 2) {
               id(status_led)->turn_on()
@@ -1415,7 +1476,6 @@ interval:
                 .set_effect("Fast Blink Red")
                 .perform();
             }
-            
             // Status 3: blau blinkend
             else if (id(last_led_status) == 3) {
               id(status_led)->turn_on()
@@ -1425,7 +1485,6 @@ interval:
                 .set_effect("Fast Blink Blue")
                 .perform();
             }
-            
             // Status 4: lila blinkend
             else if (id(last_led_status) == 4) {
               id(status_led)->turn_on()
