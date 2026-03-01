@@ -86,7 +86,7 @@ web_server:
       name: "Control"
       sorting_weight: -30
     - id: Warnings
-      name: "Warnungen"
+      name: "Warnings"
       sorting_weight: -20
     - id: Diagnostic
       name: "Diagnostic"
@@ -922,7 +922,7 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 1
 
-  - name: "Gesamte Ladung"
+  - name: "Total Charging Energy"
     id: "total_charging_energy"
     icon: mdi:chart-bar
     platform: modbus_controller
@@ -942,7 +942,7 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 12
 
-  - name: "Gesamte Entladung"
+  - name: "Total Discharging Energy"
     id: "total_discharging_energy"
     icon: mdi:chart-bar
     platform: modbus_controller
@@ -961,7 +961,7 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 13
 
-  - name: "Gesamte Tagesladung"
+  - name: "Daily Charging Energy"
     id: "daily_charging_energy"
     icon: mdi:chart-bar
     platform: modbus_controller
@@ -980,7 +980,7 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 8
 
-  - name: "Gesamte Tagesentladung"
+  - name: "Daily Discharging Energy"
     id: "daily_discharging_energy"
     icon: mdi:chart-bar
     platform: modbus_controller
@@ -999,7 +999,7 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 9
 
-  - name: "Gesamte Monatsladung"
+  - name: "Monthly Charging Energy"
     id: "monthly_charging_energy"
     icon: mdi:chart-bar
     platform: modbus_controller
@@ -1018,7 +1018,7 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 10
 
-  - name: "Gesamte Monatsentladung"
+  - name: "Monthly Discharging Energy"
     id: "monthly_discharging_energy"
     icon: mdi:chart-bar
     platform: modbus_controller
@@ -1139,7 +1139,7 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 23
 
-  - name: "Max. Zellenspannung"
+  - name: "Max. Cell Voltage"
     icon: mdi:sine-wave
     id: max_cell_voltage
     platform: modbus_controller
@@ -1159,7 +1159,7 @@ sensor:
       sorting_group_id: Info
       sorting_weight: 24
 
-  - name: "Min. Zellenspannung"
+  - name: "Min. Cell Voltage"
     icon: mdi:sine-wave
     id: min_cell_voltage
     platform: modbus_controller
@@ -1179,7 +1179,7 @@ sensor:
       sorting_weight: 25
 
   - platform: template
-    name: "Zellspannungsdifferenz"
+    name: "Cell Voltage Delta"
     icon: mdi:sine-wave
     unit_of_measurement: "V"
     device_class: voltage
