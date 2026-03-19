@@ -818,9 +818,7 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "%"
     accuracy_decimals: 0
-    skip_updates: 29
-    filters:
-     - delta: 1.0
+    skip_updates: 19
     web_server:
       sorting_group_id: Info
       sorting_weight: 5
@@ -839,7 +837,7 @@ sensor:
     accuracy_decimals: 3
     filters:
       - multiply: 0.001
-    skip_updates: 29
+    skip_updates: 19
     web_server:
       sorting_group_id: Info
       sorting_weight: 7
