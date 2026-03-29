@@ -33,7 +33,7 @@ Monitor and control your Marstek Venus E plug-in battery (5.12 kWh) using ESPHom
 
 ### Monitoring & Control
 - **Real-time Battery Metrics**: SOC, voltage, current, power, temperature with cell-level monitoring
-- **Runtime Estimation**: Dynamic time-to-full/empty calculation based on power flow
+- **Runtime Estimation**: Dynamic time-to-full/empty calculation — lower SOC threshold is read directly from the configured `Discharging Cutoff Capacity`, not hardcoded
 - **Energy Tracking**: Daily, monthly, and lifetime charge/discharge statistics
 - **Work Mode Control**: Manual, Anti-feed, AI modes with forcible charge/discharge
 - **Power Management**: Adjustable limits (0-2500W), SOC targets (12-100%), backup function
@@ -44,6 +44,7 @@ Monitor and control your Marstek Venus E plug-in battery (5.12 kWh) using ESPHom
 - **OTA Updates**: Wireless firmware updates via ESPHome dashboard or web interface
 - **Status LED Feedback**: Visual system state via onboard WS2812 LED
 - **System Diagnostics**: WiFi/BT/Cloud status, software versions, connection monitoring
+- **NTP Time Sync**: Primary local timeserver with `pool.ntp.org` fallback — works without a local NTP server
 
 ### Home Assistant Ready
 - **Automatic Discovery**: Zero-config integration via ESPHome API
@@ -78,15 +79,17 @@ Monitor and control your Marstek Venus E plug-in battery (5.12 kWh) using ESPHom
 
 **🔧 Modbus Efficiency**
 - Register batching reduces 7 blocks from 24 requests to 7 requests
-- Smart polling with skip_updates for slow-changing values
+- Smart polling with `skip_updates` for slow-changing values
 - Event-driven updates instead of fixed intervals
+- `command_throttle` and `send_wait_time` reduced to 30ms for lower bus latency
+- UART `rx_buffer_size` set to 512 bytes to prevent data loss on fast response frames
 
 **💾 Memory & Performance**
 - 22-25 KB less RAM usage through optimizations
 - 20 KB smaller firmware size
 - Faster boot times and reduced CPU load
 
-**📡 Network Optimization**  
+**📡 Network Optimization**
 - 56% fewer API calls through intelligent batching
 - 35-40% less network traffic via throttling
 - 20-30% WiFi throughput increase with AMPDU
@@ -105,7 +108,6 @@ Monitor and control your Marstek Venus E plug-in battery (5.12 kWh) using ESPHom
 ### ESPHome Web Interface
 
 <img width="1238" height="1651" alt="maesp1" src="https://github.com/user-attachments/assets/6f2a7cac-d7bf-4e45-9db6-323d5c5d9d01" />
-
 
 *Cell information, AC/DC metrics, and energy statistics*
 
@@ -146,8 +148,7 @@ The Marstek Venus E battery includes a **Weipu SP17 5-pin connector** with RS485
 
 ### 1. Flash ESPHome to LilyGO
 
-See [INSTALL ESPhome on LilyGo.md](INSTALL%20ESPhome%20on%20LilyGo.md) for detailed
- flashing instructions.
+See [INSTALL ESPhome on LilyGo.md](INSTALL%20ESPhome%20on%20LilyGo.md) for detailed flashing instructions.
 
 ### 2. Download Configuration
 
@@ -191,6 +192,7 @@ First, compile and validate the configuration:
 If compilation succeeds, flash the device:
 
     esphome run Marstek-Lilygo-ESPHome-Config.yaml
+
 ---
 
 ## 📦 Installation
@@ -310,19 +312,21 @@ Create `templates/marstek_efficiency.yaml` and paste the template content.
 ### Battery Monitoring (8 sensors)
 - Voltage, Current, Power, State of Charge (%)
 - Remaining Capacity (kWh), Total Energy (kWh)
-- Max/Min Cell Voltage, Cell Voltage Difference
+- Max/Min Cell Voltage (Max. Zellenspannung / Min. Zellenspannung), Cell Voltage Difference (Zellspannungsdifferenz)
 
 ### Runtime & Status (2 sensors)
-- **Runtime Estimate** - "Full in: 2h 30min" / "Empty in: 1h 45min" / "Standby"
-- **Inverter State** - Sleep/Standby/Charge/Discharge/Fault/Idle
+- **Runtime Estimate** — "Voll in: 2h 30min" / "Leer in: 1h 45min" / "Standby" — lower threshold dynamically read from `Discharging Cutoff Capacity`
+- **Inverter State** — Sleep / Standby / Charge / Discharge / Fault / Idle
 
 ### AC Grid (3 sensors)
 - AC Voltage, Current, Power
 
 ### Energy Statistics (6 sensors)
-- Total Charging/Discharging Energy (kWh)
-- Daily Charging/Discharging (kWh)
-- Monthly Charging/Discharging (kWh)
+- Gesamte Ladung / Gesamte Entladung (total lifetime, kWh)
+- Gesamte Tagesladung / Gesamte Tagesentladung (daily, kWh)
+- Gesamte Monatsladung / Gesamte Monatsentladung (monthly, kWh)
+
+> **Note:** Energy sensor friendly names are in German. Entity IDs in Home Assistant are assigned at first registration and do not change when names are updated.
 
 ### Temperature (5 sensors)
 - Internal Temperature, MOS1/MOS2 Temperature
