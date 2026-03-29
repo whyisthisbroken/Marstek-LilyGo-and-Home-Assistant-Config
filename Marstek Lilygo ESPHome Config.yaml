@@ -17,9 +17,8 @@ esp32:
       minimum_chip_revision: "3.1" 
       enable_lwip_mdns_queries: false
     sdkconfig_options:
-      CONFIG_BOOTLOADER_LOG_LEVEL_WARN: "y"
       CONFIG_BT_ENABLED: "n"
-      CONFIG_COMPILER_HIDE_PATHS_MACROS: "y"
+      CONFIG_BOOTLOADER_LOG_LEVEL_WARN: "y"
       CONFIG_COMPILER_OPTIMIZATION_PERF: "y"
       CONFIG_ESP32_ALLOW_RTC_FAST_MEM_AS_HEAP: "y"
       CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
@@ -27,6 +26,7 @@ esp32:
       CONFIG_ESP32_WIFI_AMPDU_TX_ENABLED: "y"
       CONFIG_ESP32_WIFI_IRAM_OPT: "y"
       CONFIG_ESP32_WIFI_RX_IRAM_OPT: "y"
+      CONFIG_ESP32_WIFI_STATIC_RX_BUFFER_NUM: "16"
       CONFIG_ESP_TASK_WDT_TIMEOUT_S: "10"
       CONFIG_ESPTOOLPY_FLASHFREQ_80M: "y"
       CONFIG_ESPTOOLPY_FLASHMODE_QIO: "y"
@@ -42,7 +42,6 @@ esp32:
       CONFIG_LWIP_TCP_SND_BUF_DEFAULT: "5744"
       CONFIG_LWIP_TCP_WND_DEFAULT: "5744"
       CONFIG_NEWLIB_NANO_FORMAT: "y"
-      CONFIG_SPIRAM_SUPPORT: "n"
       CONFIG_UART_ISR_IN_IRAM: "y"
 
 logger:
@@ -99,11 +98,13 @@ time:
     timezone: "Europe/Berlin"
     servers:
       - 192.168.178.250
-
-##You can use Home Assistant for Time sync, just umcomment this section##
-#time:
-#  - platform: homeassistant
-#    id: homeassistant_time
+      - 0.pool.ntp.org   
+      - 1.pool.ntp.org
+    on_time_sync:
+      then:
+        - logger.log:
+            level: WARN
+            format: "Time synchronized"
 
 ##Pins required for LilyGo T-CAN485 board
 output:
@@ -131,18 +132,19 @@ uart:
     data_bits: 8
     stop_bits: 1
     parity: NONE
+    rx_buffer_size: 512
 
 modbus:
   - uart_id: mod_bus
     id: modbus1
-    send_wait_time: 50ms
+    send_wait_time: 30ms
 
 modbus_controller:
   - id: mt
     address: 0x1
     modbus_id: modbus1
     setup_priority: -100
-    command_throttle: 50ms
+    command_throttle: 30ms
     update_interval: 3s
     offline_skip_updates: 5
 
@@ -179,6 +181,7 @@ text_sensor:
 
   - platform: template
     name: "Inverter State"
+    icon: mdi:state-machine
     lambda: |-
       switch (int(id(inverter_state).state)) {
         case 0: return std::string("Sleep");
@@ -201,39 +204,42 @@ text_sensor:
     icon: mdi:clock-outline
     update_interval: 10s
     lambda: |-
-      float soc = id(battery_soc).state;
-      float power = id(battery_power).state;
-      
-      if (isnan(soc) || isnan(power)) return {"Unbekannt"};
-      
-      static constexpr float CAP_TOTAL = 5120.0f;
-      static constexpr float CAP_MIN = 665.6f;
-      float cap_now = (soc / 100.0f) * CAP_TOTAL;
-      
+      const float soc = id(battery_soc).state;
+      const float power = id(battery_power).state;
+      const float cutoff_soc = id(discharging_cutoff_capacity).state;
+
+      if (isnan(soc) || isnan(power) || isnan(cutoff_soc)) return {"Unbekannt"};
+
+      static constexpr float CAP_TOTAL_WH = 5120.0f;
+      const float cap_now_wh = (soc / 100.0f) * CAP_TOTAL_WH;
+      const float cap_min_wh = (cutoff_soc / 100.0f) * CAP_TOTAL_WH;
+
       if (power > 20.0f) {
-        int h = (int)((CAP_TOTAL - cap_now) / power);
-        int m = (int)(((CAP_TOTAL - cap_now) / power - h) * 60.0f);
-        static char buf[32];
-        snprintf(buf, sizeof(buf), "Voll in: %dh %dmin", h, m);
-        return {buf};
-      }
-      
-      if (soc <= 13.0f) return {"Leer"};
-      
-      if (power < -20.0f) {
-        float hours = (cap_now - CAP_MIN) / fabsf(power);
+        float hours = (CAP_TOTAL_WH - cap_now_wh) / power;
+        if (hours < 0.0f) hours = 0.0f;
         int h = (int)hours;
         int m = (int)((hours - h) * 60.0f);
-        static char buf[32];
-        snprintf(buf, sizeof(buf), "Leer in: %dh %dmin", h, m);
-        return {buf};
+        char buf[32];
+        snprintf(buf, sizeof(buf), "Voll in: %dh %dmin", h, m);
+        return std::string(buf);
       }
-      
+
+      if (soc <= cutoff_soc) return {"Leer"};
+
+      if (power < -20.0f) {
+        float hours = (cap_now_wh - cap_min_wh) / fabsf(power);
+        if (hours < 0.0f) hours = 0.0f;
+        int h = (int)hours;
+        int m = (int)((hours - h) * 60.0f);
+        char buf[32];
+        snprintf(buf, sizeof(buf), "Leer in: %dh %dmin", h, m);
+        return std::string(buf);
+      }
+
       return {"Standby"};
     web_server:
       sorting_group_id: Info
       sorting_weight: 17
-
 
   - platform: wifi_info
     ip_address:
@@ -270,14 +276,12 @@ text_sensor:
     entity_category: diagnostic
     skip_updates: 20
     lambda: |-
-      uint16_t int_mode = (data[item->offset] << 8) + data[item->offset+1];
-      ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
-      std::string mode_str;
-      switch (int_mode) {
-        case 0: mode_str = "Disconnected"; break;
-        case 1: mode_str = "Connected"; break;
+      uint16_t val = (data[item->offset] << 8) + data[item->offset+1];
+      switch (val) {
+        case 0: return std::string("Disconnected");
+        case 1: return std::string("Connected");
+        default: return std::string("Unknown(" + std::to_string(val) + ")");
       }
-      return mode_str;
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 20
@@ -289,20 +293,18 @@ text_sensor:
     register_type: holding
     address: 30301
     raw_encode: NONE
-    icon: mdi:home-heart
+    icon: mdi:bluetooth
     entity_category: diagnostic
     skip_updates: 20
     lambda: |-
-      uint16_t int_mode = (data[item->offset] << 8) + data[item->offset+1];
-      ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
-      std::string mode_str;
-      switch (int_mode) {
-        case 0: mode_str = "Off"; break;
-        case 1: mode_str = "Active after boot"; break;
-        case 2: mode_str = "Connected"; break;
-        case 3: mode_str = "Active"; break;
+      uint16_t val = (data[item->offset] << 8) + data[item->offset+1];
+      switch (val) {
+        case 0: return std::string("Off");
+        case 1: return std::string("Active after boot");
+        case 2: return std::string("Connected");
+        case 3: return std::string("Active");
+        default: return std::string("Unknown(" + std::to_string(val) + ")");
       }
-      return mode_str;
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 21
@@ -314,18 +316,16 @@ text_sensor:
     register_type: holding
     address: 30302
     raw_encode: NONE
-    icon: mdi:home-heart
+    icon: mdi:cloud-outline
     entity_category: diagnostic
     skip_updates: 20
     lambda: |-
-      uint16_t int_mode = (data[item->offset] << 8) + data[item->offset+1];
-      ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
-      std::string mode_str;
-      switch (int_mode) {
-        case 0: mode_str = "Disconnected"; break;
-        case 1: mode_str = "Connected"; break;
+      uint16_t val = (data[item->offset] << 8) + data[item->offset+1];
+      switch (val) {
+        case 0: return std::string("Disconnected");
+        case 1: return std::string("Connected");
+        default: return std::string("Unknown(" + std::to_string(val) + ")");
       }
-      return mode_str;
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 22
@@ -337,18 +337,16 @@ text_sensor:
     register_type: holding
     address: 41010
     raw_encode: NONE
-    icon: mdi:home-heart
+    icon: mdi:power-plug-off-outline
     entity_category: diagnostic
     skip_updates: 20
     lambda: |-
-      uint16_t int_mode = (data[item->offset] << 8) + data[item->offset+1];
-      ESP_LOGD("main","Parsed operation mode int : %d", int_mode);
-      std::string mode_str;
-      switch (int_mode) {
-        case 0: mode_str = "Off"; break;
-        case 1: mode_str = "800W limited"; break;
+      uint16_t val = (data[item->offset] << 8) + data[item->offset+1];
+      switch (val) {
+        case 0: return std::string("Off");
+        case 1: return std::string("800W limited");
+        default: return std::string("Unknown(" + std::to_string(val) + ")");
       }
-      return mode_str;
     web_server:
       sorting_group_id: Diagnostic
       sorting_weight: 23
@@ -702,9 +700,8 @@ sensor:
     on_value:
       then:
         - lambda: |-
-            int version = (int)x;
-            char buf[5];
-            sprintf(buf, "V%d", version);
+            char buf[16];
+            snprintf(buf, sizeof(buf), "V%d", (int)x);
             id(software_version_text).publish_state(buf);
 
   - platform: modbus_controller
@@ -720,9 +717,8 @@ sensor:
     on_value:
       then:
         - lambda: |-
-            int version = (int)x;
-            char buf[5];
-            sprintf(buf, "V%d", version);
+            char buf[16];
+            snprintf(buf, sizeof(buf), "V%d", (int)x);
             id(firmware_version_text).publish_state(buf);
 
   - platform: modbus_controller
@@ -738,9 +734,8 @@ sensor:
     on_value:
       then:
         - lambda: |-
-            int version = (int)x;
-            char buf[5];
-            sprintf(buf, "V%d", version);
+            char buf[16];
+            snprintf(buf, sizeof(buf), "V%d", (int)x);
             id(bms_version_text).publish_state(buf);
 
   - name: "Battery Voltage"
@@ -834,10 +829,13 @@ sensor:
     address: 32105
     value_type: U_WORD
     unit_of_measurement: "kWh"
-    accuracy_decimals: 3
+    accuracy_decimals: 2
     filters:
       - multiply: 0.001
     skip_updates: 19
+    on_value:
+      then:
+        - component.update: battery_remaining_capacity
     web_server:
       sorting_group_id: Info
       sorting_weight: 7
@@ -1111,7 +1109,6 @@ sensor:
     accuracy_decimals: 1
     skip_updates: 149
     filters:
-     - multiply: 1
      - delta: 0.5
     web_server:
       sorting_group_id: Info
@@ -1131,7 +1128,6 @@ sensor:
     accuracy_decimals: 1
     skip_updates: 149
     filters:
-     - multiply: 1
      - delta: 0.5    
     web_server:
       sorting_group_id: Info
@@ -1349,6 +1345,8 @@ number:
     min_value: 12
     max_value: 30
     multiply: 10
+    on_value:
+      - component.update: battery_runtime_estimate
     web_server:
       sorting_group_id: Control
       sorting_weight: 8
