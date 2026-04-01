@@ -1442,7 +1442,7 @@ interval:
           static int last_status = 0;
           static int status1_ticks = 0;
           
-          bool batt_ok = !isnan(id(battery_soc).state);
+          bool batt_ok = !std::isnan(id(battery_soc).state);
           bool wifi_ok = id(wifi_signal_strength).state > -80.0f;
           
           int new_status = 0;
