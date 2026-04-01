@@ -17,8 +17,9 @@ esp32:
       minimum_chip_revision: "3.1" 
       enable_lwip_mdns_queries: false
     sdkconfig_options:
-      CONFIG_BT_ENABLED: "n"
       CONFIG_BOOTLOADER_LOG_LEVEL_WARN: "y"
+      CONFIG_BT_ENABLED: "n"
+      CONFIG_COMPILER_HIDE_PATHS_MACROS: "y"
       CONFIG_COMPILER_OPTIMIZATION_PERF: "y"
       CONFIG_ESP32_ALLOW_RTC_FAST_MEM_AS_HEAP: "y"
       CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
@@ -64,13 +65,14 @@ wifi:
   reboot_timeout: 15min
   power_save_mode: none
   output_power: 12dB
-  use_address: 192.168.178.160
-  manual_ip:
-    static_ip: 192.168.178.160
-    gateway: 192.168.178.1
-    subnet: 255.255.255.0
-    dns1: 192.168.178.220
-    dns2: 192.168.178.1
+  ##uncomment for static IP Setting, put your IP Informations here
+  #use_address: 192.168.178.160
+  #manual_ip:
+  #  static_ip: 192.168.178.160
+  #  gateway: 192.168.178.1
+  #  subnet: 255.255.255.0
+  #  dns1: 192.168.178.220
+  #  dns2: 192.168.178.1
 
 web_server:
   port: 80
@@ -181,8 +183,14 @@ text_sensor:
 
   - platform: template
     name: "Inverter State"
+    id: inverter_state_text
     icon: mdi:state-machine
+    update_interval: never
     lambda: |-
+      if (std::isnan(id(inverter_state).state)) {
+        return std::string("Unbekannt");
+      }
+      
       switch (int(id(inverter_state).state)) {
         case 0: return std::string("Sleep");
         case 1: return std::string("Standby");
@@ -193,7 +201,6 @@ text_sensor:
         case 6: return std::string("AC bypass");
         default: return std::string("Unknown");
       };
-    update_interval: 5s
     web_server:
       sorting_group_id: Info
       sorting_weight: 4
@@ -208,7 +215,7 @@ text_sensor:
       const float power = id(battery_power).state;
       const float cutoff_soc = id(discharging_cutoff_capacity).state;
 
-      if (isnan(soc) || isnan(power) || isnan(cutoff_soc)) return {"Unbekannt"};
+      if (std::isnan(soc) || std::isnan(power) || std::isnan(cutoff_soc)) return {"Unbekannt"};
 
       static constexpr float CAP_TOTAL_WH = 5120.0f;
       const float cap_now_wh = (soc / 100.0f) * CAP_TOTAL_WH;
@@ -227,7 +234,7 @@ text_sensor:
       if (soc <= cutoff_soc) return {"Leer"};
 
       if (power < -20.0f) {
-        float hours = (cap_now_wh - cap_min_wh) / fabsf(power);
+        float hours = (cap_now_wh - cap_min_wh) / std::abs(power);
         if (hours < 0.0f) hours = 0.0f;
         int h = (int)hours;
         int m = (int)((hours - h) * 60.0f);
@@ -664,6 +671,8 @@ sensor:
     address: 35100
     value_type: U_WORD
     internal: true
+    on_value:
+      - component.update: inverter_state_text
     web_server:
       sorting_group_id: Info
       sorting_weight: 30
@@ -693,7 +702,6 @@ sensor:
     register_type: holding
     address: 31100
     value_type: U_WORD
-    register_count: 3
     accuracy_decimals: 0
     skip_updates: 149
     internal: true
@@ -746,7 +754,6 @@ sensor:
     register_type: holding
     address: 32100
     value_type: U_WORD
-    register_count: 6
     unit_of_measurement: "V"
     device_class: voltage
     accuracy_decimals: 2
@@ -754,7 +761,6 @@ sensor:
     filters:
       - multiply: 0.01
       - delta: 0.5
-      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 16
@@ -774,7 +780,6 @@ sensor:
     filters:
       - multiply: 0.01
       - delta: 0.25
-      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 15
@@ -793,7 +798,6 @@ sensor:
     accuracy_decimals: 0
     filters:
       - delta: 5.0
-      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 14
@@ -866,7 +870,6 @@ sensor:
     register_type: holding
     address: 32200
     value_type: U_WORD
-    register_count: 4
     unit_of_measurement: "V"
     device_class: voltage
     state_class: measurement
@@ -874,7 +877,6 @@ sensor:
     filters:
       - multiply: 0.1
       - delta: 0.5
-      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 3
@@ -894,7 +896,6 @@ sensor:
     filters:
       - multiply: 0.01
       - delta: 0.25
-      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 2
@@ -913,7 +914,6 @@ sensor:
     accuracy_decimals: 0
     filters:
       - delta: 5.0
-      - throttle: 2s
     web_server:
       sorting_group_id: Info
       sorting_weight: 1
@@ -926,7 +926,6 @@ sensor:
     register_type: holding
     address: 33000
     value_type: U_DWORD
-    register_count: 12
     unit_of_measurement: "kWh"
     device_class: energy
     state_class: total_increasing
@@ -1041,7 +1040,6 @@ sensor:
     register_type: holding
     address: 35000
     value_type: S_WORD
-    register_count: 3
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
@@ -1102,7 +1100,6 @@ sensor:
     register_type: holding
     address: 35010
     value_type: S_WORD
-    register_count: 2
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
@@ -1141,7 +1138,6 @@ sensor:
     register_type: holding
     address: 37007
     value_type: U_WORD
-    register_count: 2
     unit_of_measurement: "V"
     device_class: voltage
     accuracy_decimals: 2
@@ -1149,6 +1145,8 @@ sensor:
     filters:
       - multiply: 0.001
     skip_updates: 29
+    on_value:
+      - component.update: cellvoltagediff
     web_server:
       sorting_group_id: Info
       sorting_weight: 24
@@ -1168,19 +1166,23 @@ sensor:
     filters:
       - multiply: 0.001
     skip_updates: 29
+    on_value:
+      - component.update: cellvoltagediff
     web_server:
       sorting_group_id: Info
       sorting_weight: 25
 
   - platform: template
     name: "Cell Voltage Delta"
+    id: cellvoltagediff
     icon: mdi:sine-wave
     unit_of_measurement: "V"
     device_class: voltage
     accuracy_decimals: 3
     state_class: measurement
+    update_interval: never 
     lambda: |-
-      if (isnan(id(max_cell_voltage).state) || isnan(id(min_cell_voltage).state)) {
+      if (std::isnan(id(max_cell_voltage).state) || std::isnan(id(min_cell_voltage).state)) {
         return NAN;
       }
       return id(max_cell_voltage).state - id(min_cell_voltage).state;
@@ -1420,69 +1422,56 @@ light:
           min_brightness: 20%
           max_brightness: 100%
 
-#globals:
-#  - id: last_led_status
-#    type: int
-#    restore_value: no
-#    initial_value: '0'
-
 interval:
   - interval: 10s
     then:
       - lambda: |-
           static int last_status = 0;
+          static int status1_ticks = 0;
           
           bool batt_ok = !isnan(id(battery_soc).state);
           bool wifi_ok = id(wifi_signal_strength).state > -80.0f;
           
           int new_status = 0;
           if (batt_ok && wifi_ok) {
-            new_status = 1;  // grün
+            new_status = 1;
           } else if (!batt_ok && !wifi_ok) {
-            new_status = 2;  // rot blinkend
+            new_status = 2;
           } else if (!wifi_ok) {
-            new_status = 3;  // blau blinkend
+            new_status = 3;
           } else {
-            new_status = 4;  // lila blinkend
+            new_status = 4;
           }
           
-          if (new_status == last_status) return;
+          bool changed = (new_status != last_status);
           last_status = new_status;
           
-          // Status 1: grün
-          if (last_status == 1) {
-            id(status_led)->turn_on()
-              .set_red(0.0f)
-              .set_green(1.0f)
-              .set_blue(0.0f)
-              .set_brightness(0.3f)
-              .set_effect("none")
-              .perform();
-          }
-          // Status 2: rot blinkend
-          else if (last_status == 2) {
-            id(status_led)->turn_on()
-              .set_red(1.0f)
-              .set_green(0.0f)
-              .set_blue(0.0f)
-              .set_effect("Fast Blink Red")
-              .perform();
-          }
-          // Status 3: blau blinkend
-          else if (last_status == 3) {
-            id(status_led)->turn_on()
-              .set_red(0.0f)
-              .set_green(0.0f)
-              .set_blue(1.0f)
-              .set_effect("Fast Blink Blue")
-              .perform();
-          }
-          // Status 4: lila blinkend
-          else if (last_status == 4) {
-            id(status_led)->turn_on()
-              .set_red(1.0f)
-              .set_green(0.0f)
-              .set_blue(1.0f)
-              .set_effect("Fast Blink Purple")
-              .perform();
+          if (new_status == 1) {
+            if (changed) {
+              status1_ticks = 0;
+              id(status_led)->turn_on()
+                .set_red(0.0f).set_green(1.0f).set_blue(0.0f)
+                .set_brightness(0.3f).set_effect("none")
+                .perform();
+            } else {
+              status1_ticks++;
+              if (status1_ticks == 6) {  // 6 * 10s = 60s
+                id(status_led)->turn_off().perform();
+              }
+            }
+          } else if (changed) {
+            status1_ticks = 0;
+            if (new_status == 2) {
+              id(status_led)->turn_on()
+                .set_red(1.0f).set_green(0.0f).set_blue(0.0f)
+                .set_effect("Fast Blink Red").perform();
+            } else if (new_status == 3) {
+              id(status_led)->turn_on()
+                .set_red(0.0f).set_green(0.0f).set_blue(1.0f)
+                .set_effect("Fast Blink Blue").perform();
+            } else if (new_status == 4) {
+              id(status_led)->turn_on()
+                .set_red(1.0f).set_green(0.0f).set_blue(1.0f)
+                .set_effect("Fast Blink Purple").perform();
+            }
           }
