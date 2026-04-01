@@ -213,17 +213,27 @@ text_sensor:
     lambda: |-
       const float soc = id(battery_soc).state;
       const float power = id(battery_power).state;
-      const float cutoff_soc = id(discharging_cutoff_capacity).state;
+      const float cutoff_discharge_soc = id(discharging_cutoff_capacity).state;
+      const float cutoff_charge_soc = id(charging_cutoff_capacity).state;
 
-      if (std::isnan(soc) || std::isnan(power) || std::isnan(cutoff_soc)) return {"Unbekannt"};
+      if (std::isnan(soc) || std::isnan(power) ||
+          std::isnan(cutoff_discharge_soc) || std::isnan(cutoff_charge_soc)) {
+        return {"Unbekannt"};
+      }
 
       static constexpr float CAP_TOTAL_WH = 5120.0f;
       const float cap_now_wh = (soc / 100.0f) * CAP_TOTAL_WH;
-      const float cap_min_wh = (cutoff_soc / 100.0f) * CAP_TOTAL_WH;
+      const float cap_min_wh = (cutoff_discharge_soc / 100.0f) * CAP_TOTAL_WH;
+      const float cap_target_wh = (cutoff_charge_soc / 100.0f) * CAP_TOTAL_WH;
 
       if (power > 20.0f) {
-        float hours = (CAP_TOTAL_WH - cap_now_wh) / power;
+        if (soc >= cutoff_charge_soc) {
+          return {"Voll"};
+        }
+
+        float hours = (cap_target_wh - cap_now_wh) / power;
         if (hours < 0.0f) hours = 0.0f;
+
         int h = (int)hours;
         int m = (int)((hours - h) * 60.0f);
         char buf[32];
@@ -231,11 +241,14 @@ text_sensor:
         return std::string(buf);
       }
 
-      if (soc <= cutoff_soc) return {"Leer"};
+      if (soc <= cutoff_discharge_soc) {
+        return {"Leer"};
+      }
 
       if (power < -20.0f) {
         float hours = (cap_now_wh - cap_min_wh) / std::abs(power);
         if (hours < 0.0f) hours = 0.0f;
+
         int h = (int)hours;
         int m = (int)((hours - h) * 60.0f);
         char buf[32];
@@ -1145,8 +1158,6 @@ sensor:
     filters:
       - multiply: 0.001
     skip_updates: 29
-    on_value:
-      - component.update: cellvoltagediff
     web_server:
       sorting_group_id: Info
       sorting_weight: 24
@@ -1331,6 +1342,8 @@ number:
     min_value: 80
     max_value: 100
     multiply: 10
+    on_value:
+      - component.update: battery_runtime_estimate
     web_server:
       sorting_group_id: Control
       sorting_weight: 7
