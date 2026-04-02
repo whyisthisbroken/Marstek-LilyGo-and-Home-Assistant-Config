@@ -99,13 +99,11 @@ web_server:
       name: "Diagnostic"
       sorting_weight: -10
 
-##Time Server Optional, comment if you dont have a Timeserver like Chrony,setup your TimeServer IP!!!##
 time:
   - platform: sntp
     id: local_time
     timezone: "Europe/Berlin"
     servers:
-      - 192.168.178.250
       - 0.pool.ntp.org   
       - 1.pool.ntp.org
     on_time_sync:
