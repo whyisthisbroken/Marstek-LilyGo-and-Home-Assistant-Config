@@ -35,7 +35,6 @@ esp32:
       CONFIG_LOG_MAXIMUM_LEVEL_WARN: "y"
       CONFIG_LWIP_IRAM_OPTIMIZATION: "y"
       CONFIG_LWIP_IPV6: "n"
-      CONFIG_LWIP_MAX_SOCKETS: "14"
       CONFIG_LWIP_SO_REUSE: "y"
       CONFIG_LWIP_STATS: "n"
       CONFIG_LWIP_TCPIP_RECVMBOX_SIZE: "32"
@@ -817,6 +816,9 @@ sensor:
     accuracy_decimals: 0
     filters:
       - delta: 5.0
+    on_value:
+      then:
+        - component.update: battery_runtime_estimate
     web_server:
       sorting_group_id: Info
       sorting_weight: 14
@@ -827,6 +829,7 @@ sensor:
     on_value:
       then:
         - component.update: battery_remaining_capacity
+        - component.update: battery_runtime_estimate
     platform: modbus_controller
     device_class: battery
     state_class: measurement
@@ -836,7 +839,7 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "%"
     accuracy_decimals: 0
-    skip_updates: 19
+    skip_updates: 3
     web_server:
       sorting_group_id: Info
       sorting_weight: 5
@@ -1348,6 +1351,7 @@ number:
     min_value: 80
     max_value: 100
     multiply: 10
+    skip_updates: 2
     on_value:
       - component.update: battery_runtime_estimate
     web_server:
@@ -1366,6 +1370,7 @@ number:
     min_value: 12
     max_value: 30
     multiply: 10
+    skip_updates: 2
     on_value:
       - component.update: battery_runtime_estimate
     web_server:
@@ -1385,7 +1390,7 @@ number:
     min_value: 0
     max_value: 2500
     step: 1
-    skip_updates: 4
+    skip_updates: 2
     web_server:
       sorting_group_id: Control
       sorting_weight: 10
@@ -1404,7 +1409,7 @@ number:
     min_value: 0
     max_value: 2500
     step: 1
-    skip_updates: 4
+    skip_updates: 2
     web_server:
       sorting_group_id: Control
       sorting_weight: 11
