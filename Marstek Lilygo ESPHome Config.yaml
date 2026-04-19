@@ -15,14 +15,15 @@ esp32:
     type: esp-idf
     advanced:
       minimum_chip_revision: "3.1" 
+      sram1_as_iram: true
+      compiler_optimization: PERF
+      disable_libc_locks_in_iram: true
+      enable_lwip_tcpip_core_locking: true
       enable_lwip_mdns_queries: false
     sdkconfig_options:
       CONFIG_BOOTLOADER_LOG_LEVEL_WARN: "y"
       CONFIG_BT_ENABLED: "n"
-      CONFIG_COMPILER_HIDE_PATHS_MACROS: "y"
-      CONFIG_COMPILER_OPTIMIZATION_PERF: "y"
       CONFIG_ESP32_ALLOW_RTC_FAST_MEM_AS_HEAP: "y"
-      CONFIG_ESP32_DEFAULT_CPU_FREQ_240: "y"
       CONFIG_ESP32_WIFI_AMPDU_RX_ENABLED: "y"
       CONFIG_ESP32_WIFI_AMPDU_TX_ENABLED: "y"
       CONFIG_ESP32_WIFI_IRAM_OPT: "y"
@@ -47,6 +48,8 @@ esp32:
 logger:
   baud_rate: 0
   level: INFO
+  logs:
+    modbus: ERROR
 
 api:
   encryption:
@@ -214,7 +217,7 @@ text_sensor:
     name: "Battery Runtime Estimate"
     id: "battery_runtime_estimate"
     icon: mdi:clock-outline
-    update_interval: 10s
+    update_interval: never
     lambda: |-
       const float soc = id(battery_soc).state;
       const float power = id(battery_power).state;
@@ -264,7 +267,7 @@ text_sensor:
       return {"Standby"};
     web_server:
       sorting_group_id: Info
-      sorting_weight: 17
+      sorting_weight: 11
 
   - platform: wifi_info
     ip_address:
@@ -328,6 +331,7 @@ text_sensor:
         case 1: return std::string("Active after boot");
         case 2: return std::string("Connected");
         case 3: return std::string("Active");
+        case 4: return std::string("Disabled");
         default: return std::string("Unknown(" + std::to_string(val) + ")");
       }
     web_server:
@@ -691,9 +695,6 @@ sensor:
     internal: true
     on_value:
       - component.update: inverter_state_text
-    web_server:
-      sorting_group_id: Info
-      sorting_weight: 30
 
   - name: "Wifi Signal Strength"
     id: "wifi_signal_strength"
@@ -781,7 +782,7 @@ sensor:
       - delta: 0.5
     web_server:
       sorting_group_id: Info
-      sorting_weight: 16
+      sorting_weight: 8
 
   - name: "Battery Current"
     id: "battery_current"
@@ -800,7 +801,7 @@ sensor:
       - delta: 0.25
     web_server:
       sorting_group_id: Info
-      sorting_weight: 15
+      sorting_weight: 7
 
   - name: "Battery Power"
     id: "battery_power"
@@ -821,7 +822,7 @@ sensor:
         - component.update: battery_runtime_estimate
     web_server:
       sorting_group_id: Info
-      sorting_weight: 14
+      sorting_weight: 6
 
   - name: "Battery State Of Charge"
     id: "battery_soc"
@@ -864,13 +865,15 @@ sensor:
         - component.update: battery_remaining_capacity
     web_server:
       sorting_group_id: Info
-      sorting_weight: 7
+      sorting_weight: 10
 
   - platform: template
     name: "Battery Remaining Capacity"
     id: "battery_remaining_capacity"
     icon: mdi:battery-arrow-down-outline
     unit_of_measurement: "kWh"
+    device_class: energy_storage
+    state_class: measurement
     accuracy_decimals: 2
     update_interval: never
     lambda: |-
@@ -882,7 +885,7 @@ sensor:
       return NAN;
     web_server:
       sorting_group_id: Info
-      sorting_weight: 6
+      sorting_weight: 9
 
   - name: "AC Voltage"
     id: "ac_voltage"
@@ -957,7 +960,7 @@ sensor:
     skip_updates: 59
     web_server:
       sorting_group_id: Info
-      sorting_weight: 12
+      sorting_weight: 16
 
   - name: "Total Discharging Energy"
     id: "total_discharging_energy"
@@ -976,7 +979,7 @@ sensor:
     skip_updates: 59
     web_server:
       sorting_group_id: Info
-      sorting_weight: 13
+      sorting_weight: 17
 
   - name: "Daily Charging Energy"
     id: "daily_charging_energy"
@@ -995,7 +998,7 @@ sensor:
     skip_updates: 59
     web_server:
       sorting_group_id: Info
-      sorting_weight: 8
+      sorting_weight: 12
 
   - name: "Daily Discharging Energy"
     id: "daily_discharging_energy"
@@ -1014,7 +1017,7 @@ sensor:
     skip_updates: 59
     web_server:
       sorting_group_id: Info
-      sorting_weight: 9
+      sorting_weight: 13
 
   - name: "Monthly Charging Energy"
     id: "monthly_charging_energy"
@@ -1033,7 +1036,7 @@ sensor:
     skip_updates: 59
     web_server:
       sorting_group_id: Info
-      sorting_weight: 10
+      sorting_weight: 14
 
   - name: "Monthly Discharging Energy"
     id: "monthly_discharging_energy"
@@ -1052,7 +1055,7 @@ sensor:
     skip_updates: 59
     web_server:
       sorting_group_id: Info
-      sorting_weight: 11
+      sorting_weight: 15
 
   - name: "Internal Temperature"
     id: "internal_temperature"
@@ -1065,6 +1068,7 @@ sensor:
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
+    entity_category: diagnostic
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
@@ -1072,7 +1076,7 @@ sensor:
     skip_updates: 149
     web_server:
       sorting_group_id: Info
-      sorting_weight: 19
+      sorting_weight: 18
 
   - name: "Internal MOS1 Temperature"
     id: "internal_mos1_temperature"
@@ -1085,6 +1089,7 @@ sensor:
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
+    entity_category: diagnostic
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
@@ -1092,7 +1097,7 @@ sensor:
     skip_updates: 149
     web_server:
       sorting_group_id: Info
-      sorting_weight: 20
+      sorting_weight: 19
 
   - name: "Internal MOS2 Temperature"
     id: "internal_mos2_temperature"
@@ -1105,6 +1110,7 @@ sensor:
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
+    entity_category: diagnostic
     accuracy_decimals: 1
     filters:
       - multiply: 0.1
@@ -1112,7 +1118,7 @@ sensor:
     skip_updates: 149
     web_server:
       sorting_group_id: Info
-      sorting_weight: 21
+      sorting_weight: 20
 
   - name: "Max. Cell Temperature"
     id: "max_cell_temperature"
@@ -1125,13 +1131,14 @@ sensor:
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
+    entity_category: diagnostic
     accuracy_decimals: 1
     skip_updates: 149
     filters:
      - delta: 0.5
     web_server:
       sorting_group_id: Info
-      sorting_weight: 22
+      sorting_weight: 21
 
   - name: "Min. Cell Temperature"
     id: "min_cell_temperature"
@@ -1144,13 +1151,14 @@ sensor:
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
+    entity_category: diagnostic
     accuracy_decimals: 1
     skip_updates: 149
     filters:
      - delta: 0.5    
     web_server:
       sorting_group_id: Info
-      sorting_weight: 23
+      sorting_weight: 22
 
   - name: "Max. Cell Voltage"
     icon: mdi:sine-wave
@@ -1162,14 +1170,15 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "V"
     device_class: voltage
-    accuracy_decimals: 2
     state_class: measurement
+    entity_category: diagnostic
+    accuracy_decimals: 2
     filters:
       - multiply: 0.001
     skip_updates: 29
     web_server:
       sorting_group_id: Info
-      sorting_weight: 24
+      sorting_weight: 23
 
   - name: "Min. Cell Voltage"
     icon: mdi:sine-wave
@@ -1181,8 +1190,9 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "V"
     device_class: voltage
-    accuracy_decimals: 2
     state_class: measurement
+    entity_category: diagnostic
+    accuracy_decimals: 2
     filters:
       - multiply: 0.001
     skip_updates: 29
@@ -1190,7 +1200,7 @@ sensor:
       - component.update: cellvoltagediff
     web_server:
       sorting_group_id: Info
-      sorting_weight: 25
+      sorting_weight: 24
 
   - platform: template
     name: "Cell Voltage Delta"
@@ -1200,6 +1210,7 @@ sensor:
     device_class: voltage
     accuracy_decimals: 3
     state_class: measurement
+    entity_category: diagnostic
     update_interval: never 
     lambda: |-
       if (std::isnan(id(max_cell_voltage).state) || std::isnan(id(min_cell_voltage).state)) {
@@ -1208,7 +1219,7 @@ sensor:
       return id(max_cell_voltage).state - id(min_cell_voltage).state;
     web_server:
       sorting_group_id: Info
-      sorting_weight: 26
+      sorting_weight: 25
 
   - platform: wifi_signal
     name: "ESP WiFi Signal Strength"
@@ -1342,6 +1353,7 @@ number:
   - name: "Charging Cutoff Capacity"
     id: "charging_cutoff_capacity"
     icon: mdi:battery-90
+    mode: box 
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
@@ -1361,6 +1373,7 @@ number:
   - name: "Discharging Cutoff Capacity"
     id: "discharging_cutoff_capacity"
     icon: mdi:battery-10
+    mode: box 
     platform: modbus_controller
     modbus_controller_id: mt
     register_type: holding
